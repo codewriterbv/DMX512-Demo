@@ -15,6 +15,8 @@ import javafx.util.StringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Comparator;
+
 public class DMX512DemoApp extends Application {
     private static final Logger LOGGER = LogManager.getLogger(DMX512DemoApp.class.getName());
 
@@ -30,7 +32,8 @@ public class DMX512DemoApp extends Application {
 
         var serialConnections = new ComboBox<SerialConnection>();
         serialConnections.getItems().addAll(dmxSerialController.getAvailablePorts());
-        serialConnections.setConverter(new StringConverter<SerialConnection>() {
+        serialConnections.getItems().sort(Comparator.comparing(SerialConnection::description));
+        serialConnections.setConverter(new StringConverter<>() {
             @Override
             public String toString(SerialConnection serialConnection) {
                 return serialConnection != null ? serialConnection.description() : ""; // Show name field
