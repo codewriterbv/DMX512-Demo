@@ -7,14 +7,15 @@ import be.codewriter.dmx512.controller.DMXSerialController;
 import be.codewriter.dmx512.ofl.OpenFormatLibraryParser;
 import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512.serial.SerialConnection;
-import be.codewriter.dmx512demo.client.DMXClientController;
+import be.codewriter.dmx512demo.client.DMXClientInfo;
+import be.codewriter.dmx512demo.client.DMXControllers;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -66,20 +67,30 @@ public class DMX512DemoApp extends Application {
             }
         });
 
-        var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
-        var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
-
         var holder = new HBox(new Label("Test"), serialConnections);
         holder.setPadding(new Insets(10));
         holder.setSpacing(10);
 
-        TabPane tabPane = new TabPane();
-        tabPane.getTabs().add(new DMXClientController(new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 0)));
-        tabPane.getTabs().add(new DMXClientController(new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 5)));
-        tabPane.getTabs().add(new DMXClientController(new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 10)));
-        tabPane.getTabs().add(new DMXClientController(new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 12)));
-        holder.getChildren().add(tabPane);
-        
+        var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
+        var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
+
+        if (ledPartyTclSpot != null && picoSpot20Led != null) {
+            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 0);
+            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 5);
+            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 10);
+            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 22);
+
+            Accordion clients = new Accordion();
+            clients.getPanes().add(new DMXClientInfo(ledPartyTclSpot1));
+            clients.getPanes().add(new DMXClientInfo(ledPartyTclSpot2));
+            clients.getPanes().add(new DMXClientInfo(picoSpot1));
+            clients.getPanes().add(new DMXClientInfo(picoSpot2));
+            clients.getPanes().getFirst().setExpanded(true);
+            holder.getChildren().add(clients);
+
+            holder.getChildren().add(new DMXControllers(dmxSerialController, ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2));
+        }
+
         var scene = new Scene(holder, 1200, 850);
         stage.setScene(scene);
         stage.setTitle("DMX512 Demo");

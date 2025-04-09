@@ -10,6 +10,7 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
@@ -20,17 +21,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class DMXClientInfo extends GridPane {
+public class DMXClientInfo extends TitledPane {
     private static final Logger LOGGER = LogManager.getLogger(DMXClientInfo.class.getName());
 
     private static final int TITLE_FONT_SIZE = 18;
     private static final int TEXT_FONT_SIZE = 14;
+    private final GridPane grid;
     private int rowIndex = 0;
 
     public DMXClientInfo(DMXClient client) {
-        this.setHgap(10);
-        this.setVgap(5);
-        this.setPadding(new Insets(15, 0, 0, 0));
+        this.setText("DMXClient " + client.getFixture().name() + " (" + client.getStartChannel() + ")");
+
+        grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(5);
+        this.setContent(grid);
 
         var fixture = client.getFixture();
         addRow(fixture.name(), TITLE_FONT_SIZE);
@@ -50,7 +55,6 @@ public class DMXClientInfo extends GridPane {
         addRow(" ", " ");
 
         addLinks(fixture.links());
-
     }
 
     private void addLinks(Links links) {
@@ -117,7 +121,7 @@ public class DMXClientInfo extends GridPane {
 
     private void addRow(String label, int fontSize) {
         var lbl = getLabel(label, fontSize, false);
-        this.add(lbl, 0, rowIndex, 2, 1);
+        grid.add(lbl, 0, rowIndex, 2, 1);
         GridPane.setValignment(lbl, VPos.TOP);
         GridPane.setValignment(lbl, VPos.TOP);
 
@@ -137,13 +141,12 @@ public class DMXClientInfo extends GridPane {
     }
 
     private void addRow(Node column1, Node column2) {
-        this.add(column1, 0, rowIndex);
-        this.add(column2, 1, rowIndex);
+        grid.add(column1, 0, rowIndex);
+        grid.add(column2, 1, rowIndex);
         GridPane.setValignment(column1, VPos.TOP);
         GridPane.setValignment(column2, VPos.TOP);
         GridPane.setHalignment(column1, HPos.LEFT);
         GridPane.setHalignment(column2, HPos.LEFT);
-
         rowIndex++;
     }
 
@@ -152,19 +155,4 @@ public class DMXClientInfo extends GridPane {
         label.setStyle("-fx-font-size: " + fontSize + "px; -fx-font-weight: " + (bold ? "bold" : "normal") + ";");
         return label;
     }
-
-/*
-
-        },
-        "physical": {
-        "dimensions": [162, 242, 174],
-        "weight": 3,
-        "power": 35,
-        "DMXconnector": "3-pin",
-        "bulb": {
-        "type": "12W white CREE LED"
-        },
-        "lens": {
-        "degreesMinMax": [13, 13]
-        }*/
 }
