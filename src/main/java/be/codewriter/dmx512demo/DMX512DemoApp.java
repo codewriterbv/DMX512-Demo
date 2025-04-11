@@ -78,8 +78,8 @@ public class DMX512DemoApp extends Application {
         if (ledPartyTclSpot != null && picoSpot20Led != null) {
             var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 0);
             var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 5);
-            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 10);
-            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 22);
+            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("9-channel"), 10);
+            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("9-channel"), 22);
 
             Accordion clients = new Accordion();
             clients.getPanes().add(new DMXClientInfo(ledPartyTclSpot1));

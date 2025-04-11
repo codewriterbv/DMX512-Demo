@@ -19,5 +19,5 @@
 }
 
 .joystick-knob:pressed {
-    -fx-fill: #2868a8;
+    -fx-fill: #FF0000;
 }

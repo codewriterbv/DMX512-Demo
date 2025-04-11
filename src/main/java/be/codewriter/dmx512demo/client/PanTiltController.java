@@ -11,10 +11,13 @@ import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
 public class PanTiltController extends VBox {
+    private static final Logger LOGGER = LogManager.getLogger(PanTiltController.class.getName());
     private static final double AREA_SIZE = 200;
     private static final double KNOB_RADIUS = 15;
     private final DoubleProperty panValue = new SimpleDoubleProperty(127);
@@ -67,7 +70,11 @@ public class PanTiltController extends VBox {
         getChildren().addAll(joystickArea, speedSlider, valueLabel);
 
         // Add CSS styles
-        getStylesheets().add(getClass().getResource("/css/panTiltControl.css").toExternalForm());
+        try {
+            getStylesheets().add(getClass().getResource("/css/panTiltControl.css").toExternalForm());
+        } catch (Exception e) {
+            LOGGER.error("Error while loading stylesheets: {}", e.getMessage());
+        }
 
         // Send value changes to devices
         panValue.addListener((_, _, _) -> updateClients(controller, clients));

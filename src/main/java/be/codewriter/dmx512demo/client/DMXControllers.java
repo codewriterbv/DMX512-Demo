@@ -3,26 +3,27 @@ package be.codewriter.dmx512demo.client;
 import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512demo.client.data.ListItem;
-import javafx.geometry.Insets;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
-public class DMXControllers extends GridPane {
-    private static final Logger LOGGER = LogManager.getLogger(DMXControllers.class.getName());
-
+public class DMXControllers extends FlowPane {
     public DMXControllers(DMXController controller, List<DMXClient> clients) {
-        this.setPadding(new Insets(0));
+        setHgap(10); // horizontal gap between elements
+        setVgap(10); // vertical gap between rows
+        setPrefWrapLength(800); // preferred width before wrapping
 
-        add(new RGBController(controller, clients), 0, 0);
-        add(getColorWheel(controller, clients, "Color Wheel"), 1, 0);
-        add(getGoboWheel(controller, clients, "Gobo Wheel"), 2, 0);
-        add(new PanTiltController(controller, clients), 0, 1);
+        //setPadding(new Insets(0));
+
+        getChildren().add(new RGBController(controller, clients));
+        getChildren().add(getColorWheel(controller, clients, "Color Wheel"));
+        getChildren().add(getGoboWheel(controller, clients, "Gobo Wheel"));
+        getChildren().add(new PanTiltController(controller, clients));
+        getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255));
+        getChildren().add(new SingleSliderController(controller, clients, "Shutter / Strobe", 0));
     }
 
     /**
