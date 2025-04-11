@@ -1,0 +1,23 @@
+.joystick-boundary {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.joystick-knob {
+    -fx-fill: #4a90e2;
+    -fx-stroke: #357abd;
+    -fx-stroke-width: 2px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 2);
+}
+
+.joystick-knob:hover {
+    -fx-fill: #357abd;
+}
+
+.joystick-knob:pressed {
+    -fx-fill: #2868a8;
+}

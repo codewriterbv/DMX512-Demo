@@ -107,8 +107,8 @@ public class DMX512DemoApp extends Application {
     }
 
     private enum FixtureFile {
-        LED_PARTY_TCL_SPOT("led-party-tcl-spot.json"),
-        PICOSPOT_20_LED("picospot-20-led.json");
+        LED_PARTY_TCL_SPOT("ofl/led-party-tcl-spot.json"),
+        PICOSPOT_20_LED("ofl/picospot-20-led.json");
 
         private final String fileName;
 

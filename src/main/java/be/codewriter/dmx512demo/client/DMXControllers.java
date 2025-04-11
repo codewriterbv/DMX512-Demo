@@ -17,11 +17,12 @@ public class DMXControllers extends GridPane {
     private static final Logger LOGGER = LogManager.getLogger(DMXControllers.class.getName());
 
     public DMXControllers(DMXController controller, List<DMXClient> clients) {
-        this.setPadding(new Insets(15, 0, 0, 0));
+        this.setPadding(new Insets(0));
 
         add(new RGBController(controller, clients), 0, 0);
         add(getColorWheel(controller, clients, "Color Wheel"), 1, 0);
         add(getGoboWheel(controller, clients, "Gobo Wheel"), 2, 0);
+        add(new PanTiltController(controller, clients), 0, 1);
     }
 
     /**
