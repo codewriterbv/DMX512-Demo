@@ -21,6 +21,7 @@ public class DMXControllers extends GridPane {
 
         add(new RGBController(controller, clients), 0, 0);
         add(getColorWheel(controller, clients, "Color Wheel"), 1, 0);
+        add(getGoboWheel(controller, clients, "Gobo Wheel"), 2, 0);
     }
 
     /**
@@ -60,6 +61,39 @@ public class DMXControllers extends GridPane {
                 new ListItem((byte) 143, "Blue-Cyan", getColorBox(Color.BLUE, Color.CYAN)),
                 new ListItem((byte) 154, "Cyan-Purple", getColorBox(Color.CYAN, Color.PURPLE)),
                 new ListItem((byte) 165, "Purple-White", getColorBox(Color.PURPLE, Color.WHITE))
+
+        );
+        return new ListController(controller, clients, key, items);
+    }
+
+    /**
+     * 0 	…	15: Open
+     * 16 	…	31: Gobo 1
+     * 32 	…	46: Gobo 2
+     * 47 	…	62: Gobo 3
+     * 63 	…	78: Gobo 4
+     * 79 	…	93: Gobo 5
+     * 94 	…	109: Gobo 6
+     * 110 	…	124: Gobo 7
+     * 125 	…	140: Gobo 1 shake slow…fast
+     * 141 	…	156: Gobo 2 shake slow…fast
+     * 157 	…	171: Gobo 3 shake slow…fast
+     * 172 	…	187: Gobo 4 shake slow…fast
+     * 188 	…	203: Gobo 5 shake slow…fast
+     * 204 	…	218: Gobo 6 shake slow…fast
+     * 219 	…	249: Gobo 7 shake slow…fast
+     * 250 	…	255: Gobo Wheel rotation CW slow…fast
+     */
+    private ListController getGoboWheel(DMXController controller, List<DMXClient> clients, String key) {
+        var items = List.of(
+                new ListItem((byte) 0, "Open", getColorBox(Color.WHITE)),
+                new ListItem((byte) 16, "Gobo 1", getColorBox(Color.WHITE)),
+                new ListItem((byte) 32, "Gobo 2", getColorBox(Color.WHITE)),
+                new ListItem((byte) 47, "Gobo 3", getColorBox(Color.WHITE)),
+                new ListItem((byte) 63, "Gobo 4", getColorBox(Color.WHITE)),
+                new ListItem((byte) 79, "Gobo 5", getColorBox(Color.WHITE)),
+                new ListItem((byte) 94, "Gobo 6", getColorBox(Color.WHITE)),
+                new ListItem((byte) 110, "Gobo 7", getColorBox(Color.WHITE))
 
         );
         return new ListController(controller, clients, key, items);
