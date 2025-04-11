@@ -1,40 +1,50 @@
 package be.codewriter.dmx512demo.client;
 
+import be.codewriter.dmx512.client.DMXClient;
+import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512demo.helper.ColorHelper;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
+
+import java.util.List;
 
 public class RGBController extends HBox {
-    public RGBController() {
-        var red = getSlider("Red", Color.RED);
-        var green = getSlider("Green", Color.GREEN);
-        var blue = getSlider("Blue", Color.BLUE);
+    public RGBController(DMXController controller, List<DMXClient> clients) {
+        var red = getSlider(controller, clients, "Red", Color.RED);
+        var green = getSlider(controller, clients, "Green", Color.GREEN);
+        var blue = getSlider(controller, clients, "Blue", Color.BLUE);
         getChildren().addAll(red, green, blue);
     }
 
-    private VBox getSlider(String title, Color color) {
+    private VBox getSlider(DMXController controller, List<DMXClient> clients, String key, Color color) {
         var holder = new VBox();
+        holder.setPrefWidth(50);
         holder.setSpacing(10);
-        holder.getChildren().add(new Label(title));
+        holder.setAlignment(Pos.TOP_CENTER);
+        holder.getChildren().add(new Label(key));
 
-        var colorBox = new Box(30, 20, 20); // Width, height, depth
-        holder.getChildren().add(colorBox);
+        // For this approach, a Pane or Region works better than a Box
+        var colorBox = new StackPane();
+        colorBox.setPrefHeight(20);
 
-        // Create PhongMaterial with the given color and apply it to the Box
-        PhongMaterial material = new PhongMaterial(color);
-        colorBox.setMaterial(material);
+        // Apply style with border
+        colorBox.setStyle("-fx-background-color: " + ColorHelper.getCssRGBA(color, 1) + ";"
+                + "-fx-border-color: " + ColorHelper.getCssRGBA(color, 1) + ";"
+                + "-fx-border-width: 2px;"
+        );
 
-        // Make colorBox expand to fill the width of the holder
-        //colorBox.setWidth(Double.MAX_VALUE);
-        VBox.setVgrow(colorBox, Priority.NEVER);
+        // Make colorBox fill the width of the holder
+        colorBox.setMaxWidth(Double.MAX_VALUE);
         VBox.setMargin(colorBox, new Insets(0, 0, 10, 0));
+
+        holder.getChildren().add(colorBox);
 
         var slider = new Slider();
         slider.setOrientation(Orientation.VERTICAL);
@@ -48,18 +58,20 @@ public class RGBController extends HBox {
         // Bind opacity of the colorBox material to the slider value
         slider.valueProperty().addListener((obs, oldVal, newVal) -> {
             // Convert slider value (0-100) to opacity (0-1)
-            double sliderPercentage = slider.getValue() / slider.getMax()
-            double opacity = Math.min(1.0, Math.max(0.0, newVal.doubleValue() / 100.0));
+            double sliderPercentage = slider.getValue() / slider.getMax();
 
-            // Create a new color with the same RGB but different opacity
-            Color adjustedColor = new Color(
-                    color.getRed(),
-                    color.getGreen(),
-                    color.getBlue(),
-                    opacity
+            // Update the style with new opacity
+            colorBox.setStyle("-fx-background-color: " + ColorHelper.getCssRGBA(color, sliderPercentage) + ";"
+                    + "-fx-border-color: " + ColorHelper.getCssRGBA(color, 1) + ";"
+                    + "-fx-border-width: 2px;"
             );
 
-            material.setDiffuseColor(adjustedColor);
+            // Update the client values
+            clients.stream()
+                    .filter(c -> c.hasChannel(key))
+                    .forEach(c -> c.setValue(key, (byte) (255.0 * sliderPercentage)));
+
+            controller.render(clients);
         });
 
         return holder;

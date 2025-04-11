@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
 import java.util.Comparator;
+import java.util.List;
 
 public class DMX512DemoApp extends Application {
     private static final Logger LOGGER = LogManager.getLogger(DMX512DemoApp.class.getName());
@@ -88,7 +89,7 @@ public class DMX512DemoApp extends Application {
             clients.getPanes().getFirst().setExpanded(true);
             holder.getChildren().add(clients);
 
-            holder.getChildren().add(new DMXControllers(dmxSerialController, ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2));
+            holder.getChildren().add(new DMXControllers(dmxSerialController, List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2)));
         }
 
         var scene = new Scene(holder, 1200, 850);
