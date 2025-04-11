@@ -3,6 +3,7 @@ package be.codewriter.dmx512demo.client;
 import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512demo.client.data.ListItem;
+import javafx.geometry.VPos;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -12,11 +13,9 @@ import java.util.List;
 
 public class DMXControllers extends FlowPane {
     public DMXControllers(DMXController controller, List<DMXClient> clients) {
+        setRowValignment(VPos.TOP);
         setHgap(10); // horizontal gap between elements
         setVgap(10); // vertical gap between rows
-        setPrefWrapLength(800); // preferred width before wrapping
-
-        //setPadding(new Insets(0));
 
         getChildren().add(new RGBController(controller, clients));
         getChildren().add(getColorWheel(controller, clients, "Color Wheel"));

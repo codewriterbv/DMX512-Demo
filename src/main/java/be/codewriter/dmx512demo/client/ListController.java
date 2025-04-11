@@ -23,6 +23,17 @@ public class ListController extends ListView<ListItem> {
         observableItems = FXCollections.observableArrayList(items);
         setItems(observableItems);
 
+        // Set the preferred height based on items
+        setPrefHeight(USE_COMPUTED_SIZE);
+
+        // Calculate and set the max height based on number of items
+        // Assuming each cell is 20px high (based on your hbox.setPrefHeight(20))
+        // Plus 2 pixels for cell borders/padding if any
+        setMaxHeight(items.size() * 22);
+
+        // Disable scrollbars since we're showing all items
+        setFixedCellSize(22);
+
         setCellFactory(lv -> new ColorItemCell());
 
         setOnMouseClicked(event -> {
