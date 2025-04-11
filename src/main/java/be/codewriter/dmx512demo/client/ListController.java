@@ -4,6 +4,7 @@ import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512demo.client.data.ListItem;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -29,17 +30,19 @@ public class ListController extends ListView<ListItem> {
         // Calculate and set the max height based on number of items
         // Assuming each cell is 20px high (based on your hbox.setPrefHeight(20))
         // Plus 2 pixels for cell borders/padding if any
-        setMaxHeight(items.size() * 22);
+        setMaxHeight((items.size() * 22) + 10);
 
         // Disable scrollbars since we're showing all items
         setFixedCellSize(22);
 
-        setCellFactory(lv -> new ColorItemCell());
+        // Probably not needed, as number of items will not change in the list
+        observableItems.addListener((ListChangeListener<ListItem>) c -> setMaxHeight(observableItems.size() * 22));
+
+        setCellFactory(_ -> new ColorItemCell());
 
         setOnMouseClicked(event -> {
             ListItem selectedItem = getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
-                System.out.println("Selected: " + selectedItem);
                 clients.stream()
                         .filter(c -> c.hasChannel(key))
                         .forEach(c -> c.setValue(key, selectedItem.value()));

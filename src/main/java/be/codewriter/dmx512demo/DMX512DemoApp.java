@@ -4,11 +4,13 @@ import be.codewriter.dmx512.Main;
 import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXIPController;
 import be.codewriter.dmx512.controller.DMXSerialController;
+import be.codewriter.dmx512.network.DMXIpDevice;
 import be.codewriter.dmx512.ofl.OpenFormatLibraryParser;
 import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512.serial.SerialConnection;
 import be.codewriter.dmx512demo.client.DMXClientInfo;
 import be.codewriter.dmx512demo.client.DMXControllers;
+import be.codewriter.dmx512demo.component.OnOffIndicator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -61,8 +63,8 @@ public class DMX512DemoApp extends Application {
         var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
 
         if (ledPartyTclSpot != null && picoSpot20Led != null) {
-            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 0);
-            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().get(0), 5);
+            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 0);
+            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 5);
             var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("9-channel"), 10);
             var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("9-channel"), 22);
 
@@ -103,20 +105,53 @@ public class DMX512DemoApp extends Application {
         serialConnections.setConverter(new StringConverter<>() {
             @Override
             public String toString(SerialConnection serialConnection) {
-                return serialConnection != null ? serialConnection.description() : ""; // Show name field
+                return serialConnection != null ? serialConnection.description() : "";
             }
 
             @Override
             public SerialConnection fromString(String string) {
-                return dmxSerialController.getAvailablePorts()
-                        .stream()
-                        .filter(p -> p.description().equals(string))
-                        .findFirst()
-                        .orElse(null);
+                // Not needed
+                return null;
             }
         });
+        serialConnections.setOnAction(_ -> {
+            var selectedPort = serialConnections.getValue();
+            if (selectedPort != null) {
+                dmxSerialController.connect(selectedPort.path());
+            }
+        });
+        serialConnections.setMaxWidth(Double.MAX_VALUE);
 
-        var holder = new VBox(new Label("Test"), serialConnections);
+        var serialConnected = new OnOffIndicator("Serial connected");
+        serialConnected.isOn.set(dmxSerialController.isConnected());
+
+        var ipConnections = new ComboBox<DMXIpDevice>();
+        ipConnections.getItems().addAll(dmxIpController.discoverDevices());
+        ipConnections.getItems().sort(Comparator.comparing(DMXIpDevice::name));
+        ipConnections.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(DMXIpDevice dmxIpDevice) {
+                return dmxIpDevice != null ? dmxIpDevice.name() : "";
+            }
+
+            @Override
+            public DMXIpDevice fromString(String string) {
+                // Not needed
+                return null;
+            }
+        });
+        ipConnections.setOnAction(_ -> {
+            var selectedDevice = ipConnections.getValue();
+            if (selectedDevice != null) {
+                dmxIpController.connect(selectedDevice.ipAddress());
+            }
+        });
+        ipConnections.setMaxWidth(Double.MAX_VALUE);
+
+        var ipConnected = new OnOffIndicator("IP connected");
+        ipConnected.isOn.set(dmxIpController.isConnected());
+
+        var holder = new VBox(new Label("Connections"), serialConnections, serialConnected, ipConnections, ipConnected);
         holder.setPrefWidth(250);
         holder.setPadding(new Insets(10));
         holder.setSpacing(10);

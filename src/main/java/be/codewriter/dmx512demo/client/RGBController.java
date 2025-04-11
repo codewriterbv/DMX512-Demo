@@ -27,6 +27,12 @@ public class RGBController extends VBox {
         getChildren().addAll(rgbColorBox, sliders);
     }
 
+    private static String getColorBoxStyle(Color color1, double opacity1, Color color2, double opacity2) {
+        return "-fx-background-color: " + ColorHelper.getCssRGBA(color1, opacity1) + ";"
+                + "-fx-border-color: " + ColorHelper.getCssRGBA(color2, opacity2) + ";"
+                + "-fx-border-width: 2px;";
+    }
+
     private VBox getSlider(DMXController controller, List<DMXClient> clients, IntConsumer colorSetter, String key, Color color) {
         var holder = new VBox();
         holder.setPrefWidth(50);
@@ -39,10 +45,7 @@ public class RGBController extends VBox {
         colorBox.setPrefHeight(20);
 
         // Apply style with border
-        colorBox.setStyle("-fx-background-color: " + ColorHelper.getCssRGBA(color, 1) + ";"
-                + "-fx-border-color: " + ColorHelper.getCssRGBA(color, 1) + ";"
-                + "-fx-border-width: 2px;"
-        );
+        colorBox.setStyle(getColorBoxStyle(color, 1, color, 1));
 
         // Make colorBox fill the width of the holder
         colorBox.setMaxWidth(Double.MAX_VALUE);
@@ -63,10 +66,7 @@ public class RGBController extends VBox {
             double sliderPercentage = slider.getValue() / slider.getMax();
 
             // Update the style with new opacity
-            colorBox.setStyle("-fx-background-color: " + ColorHelper.getCssRGBA(color, sliderPercentage) + ";"
-                    + "-fx-border-color: " + ColorHelper.getCssRGBA(color, 1) + ";"
-                    + "-fx-border-width: 2px;"
-            );
+            colorBox.setStyle(getColorBoxStyle(color, sliderPercentage, color, 1));
 
             // Update the color value through the setter
             colorSetter.accept((int) (255.0 * sliderPercentage));
@@ -111,10 +111,7 @@ public class RGBController extends VBox {
         }
 
         private void updateColor() {
-            setStyle("-fx-background-color: " + ColorHelper.getCssRGBA(red, green, blue, 1) + ";"
-                    + "-fx-border-color: " + ColorHelper.getCssRGBA(Color.BLACK, 1) + ";"
-                    + "-fx-border-width: 2px;"
-            );
+            setStyle(getColorBoxStyle(Color.color(red / 255.0, green / 255.0, blue / 255.0), 1, Color.BLACK, 1));
         }
     }
 }

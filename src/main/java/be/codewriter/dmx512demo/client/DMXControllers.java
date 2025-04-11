@@ -18,8 +18,8 @@ public class DMXControllers extends FlowPane {
         setVgap(10); // vertical gap between rows
 
         getChildren().add(new RGBController(controller, clients));
-        getChildren().add(getColorWheel(controller, clients, "Color Wheel"));
-        getChildren().add(getGoboWheel(controller, clients, "Gobo Wheel"));
+        getChildren().add(getColorWheel(controller, clients));
+        getChildren().add(getGoboWheel(controller, clients));
         getChildren().add(new PanTiltController(controller, clients));
         getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255));
         getChildren().add(new SingleSliderController(controller, clients, "Shutter / Strobe", 0));
@@ -44,7 +44,7 @@ public class DMXControllers extends FlowPane {
      * 165 	…	175: Purple … White
      * 176 	…	255: Color Wheel rotation CW slow…
      */
-    private ListController getColorWheel(DMXController controller, List<DMXClient> clients, String key) {
+    private ListController getColorWheel(DMXController controller, List<DMXClient> clients) {
         var items = List.of(
                 new ListItem((byte) 0, "White", getColorBox(Color.WHITE)),
                 new ListItem((byte) 11, "Red", getColorBox(Color.RED)),
@@ -64,7 +64,7 @@ public class DMXControllers extends FlowPane {
                 new ListItem((byte) 165, "Purple-White", getColorBox(Color.PURPLE, Color.WHITE))
 
         );
-        return new ListController(controller, clients, key, items);
+        return new ListController(controller, clients, "Color Wheel", items);
     }
 
     /**
@@ -85,7 +85,7 @@ public class DMXControllers extends FlowPane {
      * 219 	…	249: Gobo 7 shake slow…fast
      * 250 	…	255: Gobo Wheel rotation CW slow…fast
      */
-    private ListController getGoboWheel(DMXController controller, List<DMXClient> clients, String key) {
+    private ListController getGoboWheel(DMXController controller, List<DMXClient> clients) {
         var items = List.of(
                 new ListItem((byte) 0, "Open", getColorBox(Color.WHITE)),
                 new ListItem((byte) 16, "Gobo 1", getColorBox(Color.WHITE)),
@@ -97,7 +97,7 @@ public class DMXControllers extends FlowPane {
                 new ListItem((byte) 110, "Gobo 7", getColorBox(Color.WHITE))
 
         );
-        return new ListController(controller, clients, key, items);
+        return new ListController(controller, clients, "Gobo Wheel", items);
     }
 
     private Pane getColorBox(Color color) {
