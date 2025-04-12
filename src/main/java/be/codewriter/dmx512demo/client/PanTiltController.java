@@ -86,17 +86,35 @@ public class PanTiltController extends VBox {
     }
 
     private void updateClients(DMXController controller, List<DMXClient> clients) {
-        valueLabel.setText(String.format("Pan: %.0f, Tilt: %.0f, Speed: %.0f",
-                panValue.getValue(), tiltValue.getValue(), speedValue.getValue()));
+        var currentPanValue = panValue.getValue().intValue();
+        int panCoarse = currentPanValue / 256;
+        int panFine = currentPanValue % 256;
+        double panDegrees = ((currentPanValue * 1.0) / 65535) * 360;
+
+        var currentTiltValue = tiltValue.getValue().intValue();
+        int tiltCoarse = currentTiltValue / 256;
+        int tiltFine = currentTiltValue % 256;
+        double tiltDegrees = 180 - ((currentTiltValue * 1.0) / 65535) * 180;
+
+        valueLabel.setText(String.format("Pan: %.0f°, Tilt: %.0f°, Speed: %.0f",
+                panDegrees, tiltDegrees, speedValue.getValue()));
+
         clients.stream()
                 .filter(c -> c.hasChannel("pan"))
-                .forEach(c -> c.setValue("pan", panValue.getValue().byteValue()));
+                .forEach(c -> c.setValue("pan", (byte) panCoarse));
+        clients.stream()
+                .filter(c -> c.hasChannel("pan fine"))
+                .forEach(c -> c.setValue("pan fine", (byte) panFine));
         clients.stream()
                 .filter(c -> c.hasChannel("tilt"))
-                .forEach(c -> c.setValue("tilt", tiltValue.getValue().byteValue()));
+                .forEach(c -> c.setValue("tilt", (byte) tiltCoarse));
+        clients.stream()
+                .filter(c -> c.hasChannel("tilt fine"))
+                .forEach(c -> c.setValue("tilt fine", (byte) tiltFine));
         clients.stream()
                 .filter(c -> c.hasChannel("Pan/Tilt Speed"))
                 .forEach(c -> c.setValue("Pan/Tilt Speed", speedValue.getValue().byteValue()));
+
         controller.render(clients);
     }
 
@@ -146,12 +164,12 @@ public class PanTiltController extends VBox {
         joystick.setCenterX(x);
         joystick.setCenterY(y);
 
-        // Convert position to DMX values (0-255)
+        // Convert position to DMX values (0-65535)
         // Adjust for knob radius in calculations
         double normalizedX = (x - KNOB_RADIUS) / (AREA_SIZE - 2 * KNOB_RADIUS);
         double normalizedY = (y - KNOB_RADIUS) / (AREA_SIZE - 2 * KNOB_RADIUS);
 
-        panValue.set(normalizedX * 255);
-        tiltValue.set(normalizedY * 255);
+        panValue.set(normalizedX * 65535);
+        tiltValue.set(normalizedY * 65535);
     }
 }
