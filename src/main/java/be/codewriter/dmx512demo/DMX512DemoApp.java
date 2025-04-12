@@ -63,24 +63,17 @@ public class DMX512DemoApp extends Application {
         var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
 
         if (ledPartyTclSpot != null && picoSpot20Led != null) {
+
             var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 0);
             var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 5);
             var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 10);
             var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 22);
+            var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
 
-            Accordion clients = new Accordion();
-            clients.setPrefWidth(250);
-            clients.getPanes().add(new DMXClientInfo(ledPartyTclSpot1));
-            clients.getPanes().add(new DMXClientInfo(ledPartyTclSpot2));
-            clients.getPanes().add(new DMXClientInfo(picoSpot1));
-            clients.getPanes().add(new DMXClientInfo(picoSpot2));
-            clients.setExpandedPane(clients.getPanes().getFirst());
+            holder.getChildren().add(getClientInfo(clients));
 
-            holder.getChildren().add(clients);
-
-            var controllers = new DMXControllers(dmxSerialController, List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2));
+            var controllers = new DMXControllers(dmxSerialController, clients);
             HBox.setHgrow(controllers, Priority.ALWAYS);
-
             holder.getChildren().add(controllers);
         }
 
@@ -96,6 +89,14 @@ public class DMX512DemoApp extends Application {
             Platform.exit();
             System.exit(0);
         });
+    }
+
+    private Accordion getClientInfo(List<DMXClient> clients) {
+        var acc = new Accordion();
+        acc.setPrefWidth(300);
+        clients.forEach(c -> acc.getPanes().add(new DMXClientInfo(c)));
+        acc.setExpandedPane(acc.getPanes().getFirst());
+        return acc;
     }
 
     private VBox getDmxConnections(DMXSerialController dmxSerialController, DMXIPController dmxIpController) {
