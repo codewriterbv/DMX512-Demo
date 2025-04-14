@@ -10,7 +10,6 @@ import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DMXClientInfo extends TitledPane {
     private static final Logger LOGGER = LogManager.getLogger(DMXClientInfo.class.getName());
@@ -40,33 +40,29 @@ public class DMXClientInfo extends TitledPane {
 
         var fixture = client.getFixture();
         addRow(fixture.name(), TITLE_FONT_SIZE);
-        addRow("Mode", client.getSelectedMode().name());
         addRow("Channel", String.valueOf(client.getStartChannel()));
-        addRow(" ", " ");
+        addRow("Mode", client.getSelectedMode().name());
+        if (fixture.categories() != null) {
+            addRow(fixture.categories().size() == 1 ? "Category" : "Categories", String.join("\n", fixture.categories()));
+        }
 
-        addRow("Categories", fixture.categories() == null ? "" : String.join(", ", fixture.categories()));
-        addRow(" ", " ");
-
-        addRow("Meta", " ", TITLE_FONT_SIZE);
-        addMeta(fixture.meta());
-        addRow(" ", " ");
-
-        addRow("Fixture", " ", TITLE_FONT_SIZE);
-        addPhysical(fixture.physical());
-        addRow(" ", " ");
-
+        if (fixture.meta() != null) {
+            addRow(getMeta(fixture.meta()));
+        }
+        if (fixture.physical() != null) {
+            addRow(getPhysical(fixture.physical()));
+        }
+        if (fixture.links() != null) {
+            addRow(getLinks(fixture.links()));
+        }
         addRow(getModes(client));
         addRow(getChannels(client));
 
-        addRow(" ", " ");
-
-        addLinks(fixture.links());
     }
 
     private TitledPane getModes(DMXClient client) {
-        // Create main VBox to hold all mode TitledPanes
-        VBox modesContainer = new VBox(5); // 5px spacing between elements
-        modesContainer.setPadding(new Insets(5));
+        Accordion accordion = new Accordion();
+        accordion.setPadding(new Insets(0, 0, 0, 10));
 
         // Create a TitledPane for each mode
         for (Mode mode : client.getFixture().modes()) {
@@ -81,18 +77,17 @@ public class DMXClientInfo extends TitledPane {
 
             // Add channels in a nested TitledPane
             if (mode.channels() != null && !mode.channels().isEmpty()) {
-                TitledPane channelsPane = new TitledPane("Channels", null);
                 ListView<String> channelsList = new ListView<>();
-
-                ObservableList<String> channels = FXCollections.observableArrayList(mode.channels());
+                var counter = new AtomicInteger(1);
+                ObservableList<String> channels = FXCollections.observableArrayList(mode.channels().stream()
+                        .map(c -> counter.getAndIncrement() + ". " + c)
+                        .toList());
                 channelsList.setItems(channels);
 
                 // Set a reasonable size for the channels list
                 channelsList.setPrefHeight(Math.min(channels.size() * 24, 100));
 
-                channelsPane.setContent(channelsList);
-                channelsPane.setExpanded(false);
-                modeContent.getChildren().add(channelsPane);
+                modeContent.getChildren().add(channelsList);
             }
 
             // Create TitledPane for this mode
@@ -100,16 +95,11 @@ public class DMXClientInfo extends TitledPane {
             modePane.setExpanded(false);
 
             // Add to main container
-            modesContainer.getChildren().add(modePane);
+            accordion.getPanes().add(modePane);
         }
 
-        // Create scrollable container if there are many modes
-        ScrollPane scrollPane = new ScrollPane(modesContainer);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(300);
-
         // Create main TitledPane
-        TitledPane mainPane = new TitledPane("Available Modes (" + client.getFixture().modes().size() + ")", scrollPane);
+        TitledPane mainPane = new TitledPane("Available Modes (" + client.getFixture().modes().size() + ")", accordion);
         mainPane.setCollapsible(true);
         mainPane.setExpanded(false);
 
@@ -117,118 +107,279 @@ public class DMXClientInfo extends TitledPane {
     }
 
     private TitledPane getChannels(DMXClient client) {
-        // Create main VBox to hold all channel TitledPanes
-        VBox channelsContainer = new VBox(5); // 5px spacing between elements
-        channelsContainer.setPadding(new Insets(5));
+        // Create the root item for the TreeView
+        TreeItem<String> rootItem = new TreeItem<>("Channels");
+        rootItem.setExpanded(true);
 
-        // Create a TitledPane for each channel
+        // Create TreeView
+        TreeView<String> treeView = new TreeView<>(rootItem);
+        treeView.setShowRoot(false);
+
+        // Create a TreeItem for each channel
         for (Map.Entry<String, Channel> entry : client.getFixture().availableChannels().entrySet()) {
             String channelName = entry.getKey();
             Channel channel = entry.getValue();
 
-            // Create content for this channel's information
-            VBox channelContent = new VBox(3);
-            channelContent.setPadding(new Insets(5));
+            // Create a TreeItem for this channel
+            TreeItem<String> channelItem = new TreeItem<>(channelName);
+            rootItem.getChildren().add(channelItem);
 
             // Add default value if present
             if (channel.defaultValue() != null) {
-                Label defaultLabel = new Label("Default: " + channel.defaultValue());
-                defaultLabel.setStyle("-fx-font-size: 11px;");
-                channelContent.getChildren().add(defaultLabel);
+                TreeItem<String> defaultItem = new TreeItem<>("Default: " + channel.defaultValue());
+                channelItem.getChildren().add(defaultItem);
             }
 
             // Add aliases if present
             if (channel.fineChannelAliases() != null && !channel.fineChannelAliases().isEmpty()) {
-                Label aliasesLabel = new Label("Alias(es): " + String.join(", ", channel.fineChannelAliases()));
-                aliasesLabel.setStyle("-fx-font-size: 11px;");
-                channelContent.getChildren().add(aliasesLabel);
+                TreeItem<String> aliasesItem = new TreeItem<>("Alias(es): " + String.join(", ", channel.fineChannelAliases()));
+                channelItem.getChildren().add(aliasesItem);
             }
 
             // Add capabilities if present
             if (channel.capabilities() != null && !channel.capabilities().isEmpty()) {
-                TitledPane capabilitiesPane = new TitledPane("Capabilities", null);
-                ListView<String> capabilitiesList = new ListView<>();
+                TreeItem<String> capabilitiesItem = new TreeItem<>("Capabilities");
+                channelItem.getChildren().add(capabilitiesItem);
 
-                ObservableList<String> capabilities = FXCollections.observableArrayList();
-                channel.capabilities().forEach(c -> capabilities.add(c.type().name()));
-                capabilitiesList.setItems(capabilities);
+                // Add each capability as a child node
+                for (Capability capability : channel.capabilities()) {
+                    TreeItem<String> capabilityItem = new TreeItem<>(capability.type().name()
+                            + (capability.effectName() != null ? ": " + capability.effectName() : ""));
+                    capabilitiesItem.getChildren().add(capabilityItem);
 
-                // Set a reasonable size for the capabilities list
-                capabilitiesList.setPrefHeight(Math.min(capabilities.size() * 24, 100));
-
-                capabilitiesPane.setContent(capabilitiesList);
-                capabilitiesPane.setExpanded(false);
-                channelContent.getChildren().add(capabilitiesPane);
+                    // Add capability details
+                    if (capability.dmxRange() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("DMX Range: " + capability.dmxRange()));
+                    }
+                    if (capability.angleStart() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Angle Start: " + capability.angleStart()));
+                    }
+                    if (capability.angleEnd() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Angle End: " + capability.angleEnd()));
+                    }
+                    if (capability.shutterEffect() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Shutter Effect: " + capability.shutterEffect()));
+                    }
+                    if (capability.slotNumber() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Slot Number: " + capability.slotNumber()));
+                    }
+                    if (capability.slotNumberStart() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Slot Number Start: " + capability.slotNumberStart()));
+                    }
+                    if (capability.slotNumberEnd() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Slot Number End: " + capability.slotNumberEnd()));
+                    }
+                    if (capability.speedStart() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Speed Start: " + capability.speedStart()));
+                    }
+                    if (capability.speedEnd() != null) {
+                        capabilityItem.getChildren().add(new TreeItem<>("Speed End: " + capability.speedEnd()));
+                    }
+                }
             }
-
-            // Create TitledPane for this channel
-            TitledPane channelPane = new TitledPane(channelName, channelContent);
-            channelPane.setExpanded(false);
-
-            // Add to main container
-            channelsContainer.getChildren().add(channelPane);
         }
 
-        // Create scrollable container if there are many channels
-        ScrollPane scrollPane = new ScrollPane(channelsContainer);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(300);
+        // Set preferred size for the tree view
+        treeView.setPrefHeight(400);
+        treeView.setPrefWidth(300);
 
-        // Create main TitledPane
-        TitledPane mainPane = new TitledPane("Available Channels (" + client.getFixture().availableChannels().size() + ")", scrollPane);
+        // Apply some styling to make the tree view more readable
+        treeView.setStyle("-fx-font-size: 12px;");
+
+        // Add a cell factory to customize the appearance of tree items
+        treeView.setCellFactory(tv -> new TreeCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    setText(item);
+                    // Add styling based on the content
+                    if (item.startsWith("Capability:")) {
+                        setStyle("-fx-font-weight: bold;");
+                    } else if (getTreeItem() != null && getTreeItem().getParent() == rootItem) {
+                        // Channel names (top level items)
+                        setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+                    } else {
+                        setStyle("-fx-font-weight: normal;");
+                    }
+                }
+            }
+        });
+
+        // Add a selection listener to close other nodes when a new one is selected
+        treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                // Get the parent of the selected item (to find siblings)
+                TreeItem<String> parent = newValue.getParent();
+
+                if (parent != null) {
+                    // If the selected item is a top-level item (direct child of root)
+                    if (parent == rootItem) {
+                        // Collapse all top-level items except the selected one
+                        for (TreeItem<String> item : rootItem.getChildren()) {
+                            if (item != newValue) {
+                                item.setExpanded(false);
+                            }
+                        }
+                    }
+                    // If the selected item is a second-level item (capabilities, aliases, etc.)
+                    else if (parent.getParent() == rootItem) {
+                        // Get the "grandparent" which would be the root
+                        TreeItem<String> channelItem = parent;
+
+                        // Collapse all other channel items
+                        for (TreeItem<String> item : rootItem.getChildren()) {
+                            if (item != channelItem) {
+                                item.setExpanded(false);
+                            }
+                        }
+                    }
+                    // If the selected item is a capability
+                    else if (parent.getValue().equals("Capabilities")) {
+                        TreeItem<String> channelItem = parent.getParent();
+
+                        // Collapse all sibling capabilities
+                        for (TreeItem<String> capabilityItem : parent.getChildren()) {
+                            if (capabilityItem != newValue) {
+                                capabilityItem.setExpanded(false);
+                            }
+                        }
+
+                        // Collapse all other channel items
+                        for (TreeItem<String> item : rootItem.getChildren()) {
+                            if (item != channelItem) {
+                                item.setExpanded(false);
+                            }
+                        }
+                    }
+                    // If the selected item is a capability detail
+                    else {
+                        TreeItem<String> capabilityItem = parent;
+                        TreeItem<String> capabilitiesItem = capabilityItem.getParent();
+                        TreeItem<String> channelItem = capabilitiesItem.getParent();
+
+                        // Collapse all sibling capabilities
+                        for (TreeItem<String> item : capabilitiesItem.getChildren()) {
+                            if (item != capabilityItem) {
+                                item.setExpanded(false);
+                            }
+                        }
+
+                        // Collapse all other channel items
+                        for (TreeItem<String> item : rootItem.getChildren()) {
+                            if (item != channelItem) {
+                                item.setExpanded(false);
+                            }
+                        }
+                    }
+                }
+
+                // Always expand the selected item and its parents
+                TreeItem<String> current = newValue;
+                while (current != null) {
+                    current.setExpanded(true);
+                    current = current.getParent();
+                }
+            }
+        });
+
+        // Create the titled pane
+        TitledPane mainPane = new TitledPane("Available Channels (" + client.getFixture().availableChannels().size() + ")", treeView);
         mainPane.setCollapsible(true);
-        mainPane.setExpanded(false);
+        mainPane.setExpanded(true);
 
         return mainPane;
     }
 
-    private void addLinks(Links links) {
-        if (links == null) {
-            return;
-        }
-        var linksBox = new VBox(5);
-        linksBox.setPadding(new Insets(0));
+    private TitledPane getLinks(Links links) {
+        VBox content = new VBox(3);
+        content.setPadding(new Insets(5));
+
         if (links.manual() != null) {
             for (var link : links.manual()) {
-                linksBox.getChildren().add(getLink("Manual", link));
+                content.getChildren().add(getLink("Manual", link));
             }
         }
         if (links.productPage() != null) {
             for (var link : links.productPage()) {
-                linksBox.getChildren().add(getLink("Product page", link));
+                content.getChildren().add(getLink("Product page", link));
             }
         }
         if (links.video() != null) {
             for (var link : links.video()) {
-                linksBox.getChildren().add(getLink("Video", link));
+                content.getChildren().add(getLink("Video", link));
             }
         }
-        if (!linksBox.getChildren().isEmpty()) {
-            addRow("Links", linksBox);
-        }
+
+        TitledPane pane = new TitledPane("Links", content);
+        pane.setCollapsible(true);
+        pane.setExpanded(false);
+        return pane;
     }
 
-    private void addPhysical(Physical physical) {
-        if (physical == null) {
-            return;
+    private TitledPane getPhysical(Physical physical) {
+        VBox content = new VBox(3);
+        content.setPadding(new Insets(5));
+
+        if (physical.dimensions() != null) {
+            Label lbl = new Label("Dimensions: " + physical.dimensions());
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
         }
-        addRow("Dimensions", physical.dimensions().toString());
-        addRow("Weight", physical.weight() + " kg");
-        addRow("Power", physical.power() + " W");
-        addRow("DMXconnector", physical.DMXconnector());
-        var bulb = physical.bulb();
-        if (bulb != null) {
-            addRow("Bulb", bulb.type());
+        if (physical.weight() != null) {
+            Label lbl = new Label("Weight: " + physical.weight() + "kg");
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
         }
+        if (physical.power() != null) {
+            Label lbl = new Label("Power: " + physical.power() + "W");
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
+        }
+        if (physical.DMXconnector() != null) {
+            Label lbl = new Label("DMX connector: " + physical.DMXconnector());
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
+        }
+        if (physical.bulb() != null) {
+            Label lbl = new Label("Bulb: " + physical.bulb().type());
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
+        }
+
+        TitledPane pane = new TitledPane("Physical", content);
+        pane.setCollapsible(true);
+        pane.setExpanded(false);
+        return pane;
     }
 
-    private void addMeta(Meta meta) {
-        if (meta == null) {
-            return;
+    private TitledPane getMeta(Meta meta) {
+        VBox content = new VBox(3);
+        content.setPadding(new Insets(5));
+
+        if (meta.authors() != null) {
+            Label lbl = new Label("Authors: " + String.join(", ", meta.authors()));
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
         }
-        addRow("Authors", meta.authors() == null ? "" : String.join(", ", meta.authors()));
-        addRow("Create date", meta.createDate());
-        addRow("Last modify date", meta.lastModifyDate());
+        if (meta.createDate() != null) {
+            Label lbl = new Label("Create date: " + meta.createDate());
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
+        }
+        if (meta.lastModifyDate() != null) {
+            Label lbl = new Label("Last modified: " + meta.lastModifyDate());
+            lbl.setStyle("-fx-font-size: 11px;");
+            content.getChildren().add(lbl);
+        }
+
+        TitledPane pane = new TitledPane("Meta", content);
+        pane.setCollapsible(true);
+        pane.setExpanded(false);
+        return pane;
     }
 
     private Hyperlink getLink(String text, String url) {
