@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -118,13 +119,12 @@ public class DMX512DemoApp extends Application {
         serialConnections.setOnAction(_ -> {
             var selectedPort = serialConnections.getValue();
             if (selectedPort != null) {
-                dmxSerialController.connect(selectedPort.path());
+                dmxSerialController.connect(selectedPort.name());
             }
         });
         serialConnections.setMaxWidth(Double.MAX_VALUE);
 
-        var serialConnected = new OnOffIndicator("Serial connected");
-        serialConnected.isOn.set(dmxSerialController.isConnected());
+        var serialConnected = new OnOffIndicator("Serial connected", dmxSerialController);
 
         var ipConnections = new ComboBox<DMXIpDevice>();
         ipConnections.getItems().addAll(dmxIpController.discoverDevices());
@@ -141,6 +141,22 @@ public class DMX512DemoApp extends Application {
                 return null;
             }
         });
+        ipConnections.setCellFactory(p -> new ListCell<>() {
+            @Override
+            protected void updateItem(DMXIpDevice item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    // Format with both name and ID for dropdown items
+                    setText(item.name()
+                            + " (" + item.ipAddress() + ")\n"
+                            + "Protocol: " + item.protocol()
+                            + ", universes: " + item.universeCount());
+                }
+            }
+        });
         ipConnections.setOnAction(_ -> {
             var selectedDevice = ipConnections.getValue();
             if (selectedDevice != null) {
@@ -149,8 +165,7 @@ public class DMX512DemoApp extends Application {
         });
         ipConnections.setMaxWidth(Double.MAX_VALUE);
 
-        var ipConnected = new OnOffIndicator("IP connected");
-        ipConnected.isOn.set(dmxIpController.isConnected());
+        var ipConnected = new OnOffIndicator("IP connected", dmxIpController);
 
         var holder = new VBox(new Label("Connections"), serialConnections, serialConnected, ipConnections, ipConnected);
         holder.setPrefWidth(250);
