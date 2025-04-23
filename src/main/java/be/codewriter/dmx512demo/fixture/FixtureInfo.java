@@ -1,15 +1,12 @@
 package be.codewriter.dmx512demo.fixture;
 
+import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.ofl.model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +15,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,35 +24,65 @@ public class FixtureInfo extends TitledPane {
 
     private static final int TITLE_FONT_SIZE = 18;
     private static final int TEXT_FONT_SIZE = 14;
-    private final GridPane grid;
-    private int rowIndex = 0;
 
-    public FixtureInfo(Fixture fixture) {
+    public FixtureInfo(Fixture fixture, List<DMXClient> clients) {
         this.setText(fixture.name());
 
-        grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(5);
-        this.setContent(grid);
+        Accordion accordion = new Accordion();
+        accordion.setPadding(new Insets(0, 0, 0, 10));
+        this.setContent(accordion);
 
-        //addRow(fixture.name(), TITLE_FONT_SIZE);
-        //addRow("Channel", String.valueOf(client.getStartChannel()));
-        //addRow("Mode", client.getSelectedMode().name());
         if (fixture.categories() != null) {
-            addRow(fixture.categories().size() == 1 ? "Category" : "Categories", String.join("\n", fixture.categories()));
+            accordion.getPanes().add(getCategories(fixture.categories()));
+        }
+
+        if (clients != null && !clients.isEmpty()) {
+            accordion.getPanes().add(getClients(clients));
         }
 
         if (fixture.meta() != null) {
-            addRow(getMeta(fixture.meta()));
+            accordion.getPanes().add(getMeta(fixture.meta()));
         }
+
         if (fixture.physical() != null) {
-            addRow(getPhysical(fixture.physical()));
+            accordion.getPanes().add(getPhysical(fixture.physical()));
         }
+
+        accordion.getPanes().add(getModes(fixture));
+        accordion.getPanes().add(getChannels(fixture));
+
         if (fixture.links() != null) {
-            addRow(getLinks(fixture.links()));
+            accordion.getPanes().add(getLinks(fixture.links()));
         }
-        addRow(getModes(fixture));
-        addRow(getChannels(fixture));
+    }
+
+    private TitledPane getCategories(List<String> categories) {
+        VBox content = new VBox(3);
+        content.setPadding(new Insets(5));
+
+        categories.forEach(c -> {
+            content.getChildren().add(new Label(c));
+        });
+
+        TitledPane pane = new TitledPane(categories.size() == 1 ? "Category" : "Categories", content);
+        pane.setCollapsible(true);
+        pane.setExpanded(false);
+        return pane;
+    }
+
+    private TitledPane getClients(List<DMXClient> clients) {
+        VBox content = new VBox(3);
+        content.setPadding(new Insets(5));
+
+        clients.forEach(c -> {
+            content.getChildren().add(getLabel("Channel: " + c.getStartChannel(), TITLE_FONT_SIZE, true));
+            content.getChildren().add(getLabel("Mode: " + c.getSelectedMode().name()));
+        });
+
+        TitledPane pane = new TitledPane("Clients", content);
+        pane.setCollapsible(true);
+        pane.setExpanded(false);
+        return pane;
     }
 
     private TitledPane getModes(Fixture fixture) {
@@ -68,8 +96,7 @@ public class FixtureInfo extends TitledPane {
             modeContent.setPadding(new Insets(5));
 
             // Add shortName as a label
-            Label shortNameLabel = new Label("Short Name: " + mode.shortName());
-            shortNameLabel.setStyle("-fx-font-size: 11px;");
+            Label shortNameLabel = getLabel("Short Name: " + mode.shortName());
             modeContent.getChildren().add(shortNameLabel);
 
             // Add channels in a nested TitledPane
@@ -322,27 +349,27 @@ public class FixtureInfo extends TitledPane {
         content.setPadding(new Insets(5));
 
         if (physical.dimensions() != null) {
-            Label lbl = new Label("Dimensions: " + physical.dimensions());
+            Label lbl = getLabel("Dimensions: " + physical.dimensions());
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
         if (physical.weight() != null) {
-            Label lbl = new Label("Weight: " + physical.weight() + "kg");
+            Label lbl = getLabel("Weight: " + physical.weight() + "kg");
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
         if (physical.power() != null) {
-            Label lbl = new Label("Power: " + physical.power() + "W");
+            Label lbl = getLabel("Power: " + physical.power() + "W");
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
         if (physical.DMXconnector() != null) {
-            Label lbl = new Label("DMX connector: " + physical.DMXconnector());
+            Label lbl = getLabel("DMX connector: " + physical.DMXconnector());
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
         if (physical.bulb() != null) {
-            Label lbl = new Label("Bulb: " + physical.bulb().type());
+            Label lbl = getLabel("Bulb: " + physical.bulb().type());
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
@@ -358,17 +385,17 @@ public class FixtureInfo extends TitledPane {
         content.setPadding(new Insets(5));
 
         if (meta.authors() != null) {
-            Label lbl = new Label("Authors: " + String.join(", ", meta.authors()));
+            Label lbl = getLabel("Authors: " + String.join(", ", meta.authors()));
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
         if (meta.createDate() != null) {
-            Label lbl = new Label("Create date: " + meta.createDate());
+            Label lbl = getLabel("Create date: " + meta.createDate());
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
         if (meta.lastModifyDate() != null) {
-            Label lbl = new Label("Last modified: " + meta.lastModifyDate());
+            Label lbl = getLabel("Last modified: " + meta.lastModifyDate());
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
@@ -392,42 +419,8 @@ public class FixtureInfo extends TitledPane {
         return hyperlink;
     }
 
-    private void addRow(String label, int fontSize) {
-        var lbl = getLabel(label, fontSize, false);
-        grid.add(lbl, 0, rowIndex, 2, 1);
-        GridPane.setValignment(lbl, VPos.TOP);
-        GridPane.setValignment(lbl, VPos.TOP);
-
-        rowIndex++;
-    }
-
-    private void addRow(String label, String value) {
-        addRow(getLabel(label, TEXT_FONT_SIZE, false), getLabel(value, TEXT_FONT_SIZE, true));
-    }
-
-    private void addRow(String label, String value, int fontSize) {
-        addRow(getLabel(label, fontSize, false), getLabel(value, fontSize, true));
-    }
-
-    private void addRow(String label, Node node) {
-        addRow(getLabel(label, TEXT_FONT_SIZE, false), node);
-    }
-
-    private void addRow(Node columnSpan) {
-        grid.add(columnSpan, 0, rowIndex, 2, 1);
-        GridPane.setValignment(columnSpan, VPos.TOP);
-        GridPane.setHalignment(columnSpan, HPos.LEFT);
-        rowIndex++;
-    }
-
-    private void addRow(Node column1, Node column2) {
-        grid.add(column1, 0, rowIndex);
-        grid.add(column2, 1, rowIndex);
-        GridPane.setValignment(column1, VPos.TOP);
-        GridPane.setValignment(column2, VPos.TOP);
-        GridPane.setHalignment(column1, HPos.LEFT);
-        GridPane.setHalignment(column2, HPos.LEFT);
-        rowIndex++;
+    private Label getLabel(String text) {
+        return getLabel(text, TEXT_FONT_SIZE, false);
     }
 
     private Label getLabel(String text, int fontSize, boolean bold) {

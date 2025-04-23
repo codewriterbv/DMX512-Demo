@@ -57,13 +57,14 @@ public class DMX512DemoApp extends Application {
         var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
 
         if (ledPartyTclSpot != null && picoSpot20Led != null) {
-            holder.getChildren().add(new FixturesView(List.of(ledPartyTclSpot, picoSpot20Led)));
-
             var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 0);
             var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 5);
             var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 10);
             var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 22);
+
             var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
+
+            holder.getChildren().add(new FixturesView(List.of(ledPartyTclSpot, picoSpot20Led), clients));
 
             // Controllers
             var controllers = new DMXControllers(dmxSerialController, clients);
