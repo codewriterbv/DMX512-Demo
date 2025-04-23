@@ -1,6 +1,5 @@
-package be.codewriter.dmx512demo.client;
+package be.codewriter.dmx512demo.fixture;
 
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.ofl.model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,26 +21,25 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DMXClientInfo extends TitledPane {
-    private static final Logger LOGGER = LogManager.getLogger(DMXClientInfo.class.getName());
+public class FixtureInfo extends TitledPane {
+    private static final Logger LOGGER = LogManager.getLogger(FixtureInfo.class.getName());
 
     private static final int TITLE_FONT_SIZE = 18;
     private static final int TEXT_FONT_SIZE = 14;
     private final GridPane grid;
     private int rowIndex = 0;
 
-    public DMXClientInfo(DMXClient client) {
-        this.setText("DMXClient " + client.getFixture().name() + " (" + client.getStartChannel() + ")");
+    public FixtureInfo(Fixture fixture) {
+        this.setText(fixture.name());
 
         grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(5);
         this.setContent(grid);
 
-        var fixture = client.getFixture();
-        addRow(fixture.name(), TITLE_FONT_SIZE);
-        addRow("Channel", String.valueOf(client.getStartChannel()));
-        addRow("Mode", client.getSelectedMode().name());
+        //addRow(fixture.name(), TITLE_FONT_SIZE);
+        //addRow("Channel", String.valueOf(client.getStartChannel()));
+        //addRow("Mode", client.getSelectedMode().name());
         if (fixture.categories() != null) {
             addRow(fixture.categories().size() == 1 ? "Category" : "Categories", String.join("\n", fixture.categories()));
         }
@@ -55,17 +53,16 @@ public class DMXClientInfo extends TitledPane {
         if (fixture.links() != null) {
             addRow(getLinks(fixture.links()));
         }
-        addRow(getModes(client));
-        addRow(getChannels(client));
-
+        addRow(getModes(fixture));
+        addRow(getChannels(fixture));
     }
 
-    private TitledPane getModes(DMXClient client) {
+    private TitledPane getModes(Fixture fixture) {
         Accordion accordion = new Accordion();
         accordion.setPadding(new Insets(0, 0, 0, 10));
 
         // Create a TitledPane for each mode
-        for (Mode mode : client.getFixture().modes()) {
+        for (Mode mode : fixture.modes()) {
             // Create content for this mode's information
             VBox modeContent = new VBox(3);
             modeContent.setPadding(new Insets(5));
@@ -99,14 +96,14 @@ public class DMXClientInfo extends TitledPane {
         }
 
         // Create main TitledPane
-        TitledPane mainPane = new TitledPane("Available Modes (" + client.getFixture().modes().size() + ")", accordion);
+        TitledPane mainPane = new TitledPane("Available Modes (" + fixture.modes().size() + ")", accordion);
         mainPane.setCollapsible(true);
         mainPane.setExpanded(false);
 
         return mainPane;
     }
 
-    private TitledPane getChannels(DMXClient client) {
+    private TitledPane getChannels(Fixture fixture) {
         // Create the root item for the TreeView
         TreeItem<String> rootItem = new TreeItem<>("Channels");
         rootItem.setExpanded(true);
@@ -116,7 +113,7 @@ public class DMXClientInfo extends TitledPane {
         treeView.setShowRoot(false);
 
         // Create a TreeItem for each channel
-        for (Map.Entry<String, Channel> entry : client.getFixture().availableChannels().entrySet()) {
+        for (Map.Entry<String, Channel> entry : fixture.availableChannels().entrySet()) {
             String channelName = entry.getKey();
             Channel channel = entry.getValue();
 
@@ -287,7 +284,7 @@ public class DMXClientInfo extends TitledPane {
         });
 
         // Create the titled pane
-        TitledPane mainPane = new TitledPane("Available Channels (" + client.getFixture().availableChannels().size() + ")", treeView);
+        TitledPane mainPane = new TitledPane("Available Channels (" + fixture.availableChannels().size() + ")", treeView);
         mainPane.setCollapsible(true);
         mainPane.setExpanded(true);
 

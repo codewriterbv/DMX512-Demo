@@ -1,4 +1,4 @@
-package be.codewriter.dmx512demo.component;
+package be.codewriter.dmx512demo.connection;
 
 import be.codewriter.dmx512.controller.DMXChangeListener;
 import be.codewriter.dmx512.controller.DMXChangeMessage;
