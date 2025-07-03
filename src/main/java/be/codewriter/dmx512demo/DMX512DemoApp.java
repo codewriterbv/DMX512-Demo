@@ -58,17 +58,17 @@ public class DMX512DemoApp extends Application {
         var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
 
         if (ledPartyTclSpot != null && picoSpot20Led != null) {
-            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 1);
-            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 6);
-            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 11);
-            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getMode("11-channel"), 23);
+            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 1);
+            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 12);
+            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 23);
+            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.modes().getFirst(), 28);
 
             var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
 
             holder.getChildren().add(new FixturesView(List.of(ledPartyTclSpot, picoSpot20Led), clients));
 
             // Controllers
-            var controllers = new DMXControllers(dmxSerialController, clients);
+            var controllers = new DMXControllers(dmxIpController, clients);
             HBox.setHgrow(controllers, Priority.ALWAYS);
             holder.getChildren().add(controllers);
         }
