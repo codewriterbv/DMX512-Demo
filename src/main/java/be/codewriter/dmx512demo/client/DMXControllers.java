@@ -23,6 +23,8 @@ public class DMXControllers extends FlowPane {
         getChildren().add(new PanTiltController(controller, clients));
         getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255));
         getChildren().add(new SingleSliderController(controller, clients, "Shutter / Strobe", 0));
+        getChildren().add(getPicoSpotProgram(controller, clients));
+        getChildren().add(new SingleSliderController(controller, clients, "Program Speed", 0));
     }
 
     /**
@@ -98,6 +100,46 @@ public class DMXControllers extends FlowPane {
 
         );
         return new ListController(controller, clients, "Gobo Wheel", items);
+    }
+
+    /**
+     * 0 ... 49: NoFunction
+     * 50, 59: ColorPreset - White
+     * 60, 69: Effect" - Scene 02 (empty)
+     * 70, 79: Effect - Scene 03 (empty)
+     * 80, 89: Effect - Scene 04 (empty)
+     * 90, 99: Effect - Scene 05 (empty)
+     * 100, 109: Effect - Scene 06 (empty)
+     * 110, 119: Effect - Scene 07 (empty)
+     * 120, 129: Effect - Scene 08 (empty)
+     * 130, 139: Effect - Scene 09 (empty)
+     * 140, 149: Effect - Programme 1
+     * 150, 159: Effect - Programme 2
+     * 160, 169: Effect - Programme 3
+     * 170, 179: Effect - Programme 4
+     * 180, 189: Effect - Programme 5
+     * 190, 199: Effect - Programme 6
+     * 200, 209: Effect - Programme 7
+     * 210, 219: Effect - Programme 8 (empty)
+     * 220, 229: Effect - Programme 9 (empty)
+     * 230, 239: NoFunction - Empty
+     * 240, 249: NoFunction - Empty
+     * 250, 255: Effect - Sound-controlled operation
+     */
+    private ListController getPicoSpotProgram(DMXController controller, List<DMXClient> clients) {
+        var items = List.of(
+                new ListItem((byte) 0, "None", getColorBox(Color.GREY)),
+                new ListItem((byte) 50, "White", getColorBox(Color.WHITE)),
+                new ListItem((byte) 140, "Program 1", getColorBox(Color.BLACK)),
+                new ListItem((byte) 150, "Program 2", getColorBox(Color.BLACK)),
+                new ListItem((byte) 160, "Program 3", getColorBox(Color.BLACK)),
+                new ListItem((byte) 170, "Program 4", getColorBox(Color.BLACK)),
+                new ListItem((byte) 180, "Program 5", getColorBox(Color.BLACK)),
+                new ListItem((byte) 190, "Program 6", getColorBox(Color.BLACK)),
+                new ListItem((byte) 200, "Program 7", getColorBox(Color.BLACK)),
+                new ListItem((byte) 250, "Sound", getColorBox(Color.WHITE))
+        );
+        return new ListController(controller, clients, "Program", items);
     }
 
     private Pane getColorBox(Color color) {
