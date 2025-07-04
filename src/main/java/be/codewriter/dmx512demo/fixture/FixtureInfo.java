@@ -75,7 +75,7 @@ public class FixtureInfo extends TitledPane {
         content.setPadding(new Insets(5));
 
         clients.forEach(c -> {
-            content.getChildren().add(getLabel("Channel: " + c.getStartChannel(), TITLE_FONT_SIZE, true));
+            content.getChildren().add(getLabel("Channel: " + c.getAddress(), TITLE_FONT_SIZE, true));
             content.getChildren().add(getLabel("Mode: " + c.getSelectedMode().name()));
         });
 

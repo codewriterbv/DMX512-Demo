@@ -2,8 +2,8 @@ package be.codewriter.dmx512demo;
 
 import be.codewriter.dmx512.Main;
 import be.codewriter.dmx512.client.DMXClient;
-import be.codewriter.dmx512.controller.DMXIPController;
-import be.codewriter.dmx512.controller.DMXSerialController;
+import be.codewriter.dmx512.controller.ip.DMXIPController;
+import be.codewriter.dmx512.controller.serial.DMXSerialController;
 import be.codewriter.dmx512.ofl.OpenFormatLibraryParser;
 import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512demo.client.DMXControllers;

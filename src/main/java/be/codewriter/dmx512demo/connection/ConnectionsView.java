@@ -1,7 +1,7 @@
 package be.codewriter.dmx512demo.connection;
 
-import be.codewriter.dmx512.controller.DMXIPController;
-import be.codewriter.dmx512.controller.DMXSerialController;
+import be.codewriter.dmx512.controller.ip.DMXIPController;
+import be.codewriter.dmx512.controller.serial.DMXSerialController;
 import be.codewriter.dmx512.network.DMXIpDevice;
 import be.codewriter.dmx512.serial.SerialConnection;
 import javafx.geometry.Insets;
