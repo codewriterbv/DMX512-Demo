@@ -14,7 +14,7 @@ public class SingleSliderController extends VBox {
     private final DMXController controller;
     private final List<DMXClient> clients;
 
-    public SingleSliderController(DMXController controller, List<DMXClient> clients, String key, int defaultValue) {
+    public SingleSliderController(DMXController controller, List<DMXClient> clients, String key, int defaultValue, Orientation orientation) {
         this.controller = controller;
         this.clients = clients;
 
@@ -23,8 +23,9 @@ public class SingleSliderController extends VBox {
 
         var title = new Label(key);
 
+
         var slider = new Slider(0, 255, defaultValue);
-        slider.setOrientation(Orientation.VERTICAL);
+        slider.setOrientation(orientation);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.setMajorTickUnit(25);

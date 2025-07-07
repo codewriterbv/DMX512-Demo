@@ -19,40 +19,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FixtureInfo extends TitledPane {
+public class FixtureInfo extends Accordion {
     private static final Logger LOGGER = LogManager.getLogger(FixtureInfo.class.getName());
 
     private static final int TITLE_FONT_SIZE = 18;
     private static final int TEXT_FONT_SIZE = 14;
 
     public FixtureInfo(Fixture fixture, List<DMXClient> clients) {
-        this.setText(fixture.name());
-
-        Accordion accordion = new Accordion();
-        accordion.setPadding(new Insets(0, 0, 0, 10));
-        this.setContent(accordion);
+        setPadding(new Insets(0, 0, 0, 10));
 
         if (fixture.categories() != null) {
-            accordion.getPanes().add(getCategories(fixture.categories()));
+            getPanes().add(getCategories(fixture.categories()));
         }
 
         if (clients != null && !clients.isEmpty()) {
-            accordion.getPanes().add(getClients(clients));
+            getPanes().add(getClients(clients));
         }
 
         if (fixture.meta() != null) {
-            accordion.getPanes().add(getMeta(fixture.meta()));
+            getPanes().add(getMeta(fixture.meta()));
         }
 
         if (fixture.physical() != null) {
-            accordion.getPanes().add(getPhysical(fixture.physical()));
+            getPanes().add(getPhysical(fixture.physical()));
         }
 
-        accordion.getPanes().add(getModes(fixture));
-        accordion.getPanes().add(getChannels(fixture));
+        getPanes().add(getModes(fixture));
+        getPanes().add(getChannels(fixture));
 
         if (fixture.links() != null) {
-            accordion.getPanes().add(getLinks(fixture.links()));
+            getPanes().add(getLinks(fixture.links()));
         }
     }
 

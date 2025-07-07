@@ -2,19 +2,18 @@ package be.codewriter.dmx512demo;
 
 import be.codewriter.dmx512.Main;
 import be.codewriter.dmx512.client.DMXClient;
+import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512.controller.ip.DMXIPController;
 import be.codewriter.dmx512.controller.serial.DMXSerialController;
 import be.codewriter.dmx512.ofl.OpenFormatLibraryParser;
 import be.codewriter.dmx512.ofl.model.Fixture;
-import be.codewriter.dmx512demo.client.DMXControllers;
 import be.codewriter.dmx512demo.connection.ConnectionsView;
 import be.codewriter.dmx512demo.fixture.FixturesView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +23,7 @@ import java.util.List;
 
 public class DMX512DemoApp extends Application {
     private static final Logger LOGGER = LogManager.getLogger(DMX512DemoApp.class.getName());
+    private BorderPane holder;
 
     private static Fixture getFixture(FixtureFile fixtureFile) {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream(fixtureFile.getFileName())) {
@@ -46,32 +46,11 @@ public class DMX512DemoApp extends Application {
         var dmxIpController = new DMXIPController();
         dmxIpController.setUniverse(1);
 
-        var holder = new HBox();
+        holder = new BorderPane();
         holder.setPadding(new Insets(10));
-        holder.setSpacing(10);
 
         // Connections
-        holder.getChildren().add(new ConnectionsView(dmxSerialController, dmxIpController));
-
-        // Fixtures
-        var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
-        var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
-
-        if (ledPartyTclSpot != null && picoSpot20Led != null) {
-            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 1);
-            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 12);
-            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 23);
-            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 28);
-
-            var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
-
-            holder.getChildren().add(new FixturesView(List.of(ledPartyTclSpot, picoSpot20Led), clients));
-
-            // Controllers
-            var controllers = new DMXControllers(dmxIpController, clients);
-            HBox.setHgrow(controllers, Priority.ALWAYS);
-            holder.getChildren().add(controllers);
-        }
+        holder.setLeft(new ConnectionsView(this, dmxSerialController, dmxIpController));
 
         var scene = new Scene(holder, 1400, 850);
         stage.setScene(scene);
@@ -85,6 +64,28 @@ public class DMX512DemoApp extends Application {
             Platform.exit();
             System.exit(0);
         });
+    }
+
+    public void createFixturesView(DMXController controller) {
+        if (holder == null) {
+            LOGGER.warn("View holder not created yet");
+            return;
+        }
+
+        // Fixtures
+        var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
+        var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
+
+        if (ledPartyTclSpot != null && picoSpot20Led != null) {
+            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 1);
+            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 12);
+            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 23);
+            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 28);
+
+            var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
+
+            holder.setCenter(new FixturesView(controller, List.of(ledPartyTclSpot, picoSpot20Led), clients));
+        }
     }
 
     private enum FixtureFile {

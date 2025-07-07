@@ -4,6 +4,7 @@ import be.codewriter.dmx512.controller.ip.DMXIPController;
 import be.codewriter.dmx512.controller.serial.DMXSerialController;
 import be.codewriter.dmx512.network.DMXIpDevice;
 import be.codewriter.dmx512.serial.SerialConnection;
+import be.codewriter.dmx512demo.DMX512DemoApp;
 import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -15,7 +16,7 @@ import java.util.Comparator;
 
 public class ConnectionsView extends VBox {
 
-    public ConnectionsView(DMXSerialController dmxSerialController, DMXIPController dmxIpController) {
+    public ConnectionsView(DMX512DemoApp parent, DMXSerialController dmxSerialController, DMXIPController dmxIpController) {
         var serialConnections = new ComboBox<SerialConnection>();
         serialConnections.getItems().addAll(dmxSerialController.getAvailablePorts());
         serialConnections.getItems().sort(Comparator.comparing(SerialConnection::description));
@@ -35,6 +36,7 @@ public class ConnectionsView extends VBox {
             var selectedPort = serialConnections.getValue();
             if (selectedPort != null) {
                 dmxSerialController.connect(selectedPort.name());
+                parent.createFixturesView(dmxIpController);
             }
         });
         serialConnections.setMaxWidth(Double.MAX_VALUE);
@@ -76,6 +78,7 @@ public class ConnectionsView extends VBox {
             var selectedDevice = ipConnections.getValue();
             if (selectedDevice != null) {
                 dmxIpController.connect(selectedDevice.ipAddress());
+                parent.createFixturesView(dmxIpController);
             }
         });
         ipConnections.setMaxWidth(Double.MAX_VALUE);

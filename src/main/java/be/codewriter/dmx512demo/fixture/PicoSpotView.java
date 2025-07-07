@@ -1,30 +1,61 @@
-package be.codewriter.dmx512demo.client;
+package be.codewriter.dmx512demo.fixture;
 
 import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512demo.client.ListController;
+import be.codewriter.dmx512demo.client.PanTiltController;
+import be.codewriter.dmx512demo.client.SingleSliderController;
 import be.codewriter.dmx512demo.client.data.ListItem;
+import be.codewriter.dmx512demo.helper.ImageHelper;
+import javafx.geometry.Orientation;
 import javafx.geometry.VPos;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.util.List;
 
-public class DMXControllers extends FlowPane {
-    public DMXControllers(DMXController controller, List<DMXClient> clients) {
+import static be.codewriter.dmx512demo.client.ListController.LIST_ITEM_HEIGHT;
+
+public class PicoSpotView extends FlowPane {
+    public PicoSpotView(DMXController controller, List<DMXClient> clients) {
         setRowValignment(VPos.TOP);
         setHgap(10); // horizontal gap between elements
         setVgap(10); // vertical gap between rows
 
-        getChildren().add(new RGBController(controller, clients));
-        getChildren().add(getColorWheel(controller, clients));
-        getChildren().add(getGoboWheel(controller, clients));
+        var programList = getPicoSpotProgram(controller, clients);
+        var colorList = getColorWheel(controller, clients);
+        var goboList = getGoboWheel(controller, clients);
+
+        // Add listener to program list to enable/disable color and gobo lists
+        programList.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            boolean isFirstItemSelected = newValue.intValue() == 0;
+            colorList.setDisable(!isFirstItemSelected);
+            goboList.setDisable(!isFirstItemSelected);
+        });
+
+        // Initially set the state based on the default selection (first item)
+        boolean isFirstItemSelected = programList.getSelectionModel().getSelectedIndex() == 0;
+        colorList.setDisable(!isFirstItemSelected);
+        goboList.setDisable(!isFirstItemSelected);
+
+        getChildren().add(getProgramView(controller, clients, programList));
+        getChildren().add(colorList);
+        getChildren().add(goboList);
         getChildren().add(new PanTiltController(controller, clients));
-        getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255));
-        getChildren().add(new SingleSliderController(controller, clients, "Shutter / Strobe", 0));
-        getChildren().add(getPicoSpotProgram(controller, clients));
-        getChildren().add(new SingleSliderController(controller, clients, "Program Speed", 0));
+        getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255, Orientation.VERTICAL));
+        getChildren().add(new SingleSliderController(controller, clients, "Shutter / Strobe", 0, Orientation.VERTICAL));
+    }
+
+    private VBox getProgramView(DMXController controller, List<DMXClient> clients, ListController programList) {
+        var holder = new VBox();
+        holder.setSpacing(10);
+        holder.getChildren().addAll(programList,
+                new SingleSliderController(controller, clients, "Program Speed", 127, Orientation.HORIZONTAL));
+        return holder;
     }
 
     /**
@@ -89,14 +120,14 @@ public class DMXControllers extends FlowPane {
      */
     private ListController getGoboWheel(DMXController controller, List<DMXClient> clients) {
         var items = List.of(
-                new ListItem((byte) 0, "Open", getColorBox(Color.WHITE)),
-                new ListItem((byte) 16, "Gobo 1", getColorBox(Color.WHITE)),
-                new ListItem((byte) 32, "Gobo 2", getColorBox(Color.WHITE)),
-                new ListItem((byte) 47, "Gobo 3", getColorBox(Color.WHITE)),
-                new ListItem((byte) 63, "Gobo 4", getColorBox(Color.WHITE)),
-                new ListItem((byte) 79, "Gobo 5", getColorBox(Color.WHITE)),
-                new ListItem((byte) 94, "Gobo 6", getColorBox(Color.WHITE)),
-                new ListItem((byte) 110, "Gobo 7", getColorBox(Color.WHITE))
+                new ListItem((byte) 0, "Open", getImageBox("/gobo/open.jpg", Color.BLACK)),
+                new ListItem((byte) 16, "Gobo 1", getImageBox("/gobo/gobo-1.jpg", Color.BLACK)),
+                new ListItem((byte) 32, "Gobo 2", getImageBox("/gobo/gobo-2.jpg", Color.BLACK)),
+                new ListItem((byte) 47, "Gobo 3", getImageBox("/gobo/gobo-3.jpg", Color.BLACK)),
+                new ListItem((byte) 63, "Gobo 4", getImageBox("/gobo/gobo-4.jpg", Color.BLACK)),
+                new ListItem((byte) 79, "Gobo 5", getImageBox("/gobo/gobo-5.jpg", Color.BLACK)),
+                new ListItem((byte) 94, "Gobo 6", getImageBox("/gobo/gobo-6.jpg", Color.BLACK)),
+                new ListItem((byte) 110, "Gobo 7", getImageBox("/gobo/gobo-7.jpg", Color.BLACK))
 
         );
         return new ListController(controller, clients, "Gobo Wheel", items);
@@ -128,18 +159,51 @@ public class DMXControllers extends FlowPane {
      */
     private ListController getPicoSpotProgram(DMXController controller, List<DMXClient> clients) {
         var items = List.of(
-                new ListItem((byte) 0, "None", getColorBox(Color.GREY)),
+                new ListItem((byte) 0, "None", getImageBox("/icon/none.png", Color.WHITE)),
                 new ListItem((byte) 50, "White", getColorBox(Color.WHITE)),
-                new ListItem((byte) 140, "Program 1", getColorBox(Color.BLACK)),
-                new ListItem((byte) 150, "Program 2", getColorBox(Color.BLACK)),
-                new ListItem((byte) 160, "Program 3", getColorBox(Color.BLACK)),
-                new ListItem((byte) 170, "Program 4", getColorBox(Color.BLACK)),
-                new ListItem((byte) 180, "Program 5", getColorBox(Color.BLACK)),
-                new ListItem((byte) 190, "Program 6", getColorBox(Color.BLACK)),
-                new ListItem((byte) 200, "Program 7", getColorBox(Color.BLACK)),
-                new ListItem((byte) 250, "Sound", getColorBox(Color.WHITE))
+                new ListItem((byte) 140, "Program 1", getTextBox("P1")),
+                new ListItem((byte) 150, "Program 2", getTextBox("P2")),
+                new ListItem((byte) 160, "Program 3", getTextBox("P3")),
+                new ListItem((byte) 170, "Program 4", getTextBox("P4")),
+                new ListItem((byte) 180, "Program 5", getTextBox("P5")),
+                new ListItem((byte) 190, "Program 6", getTextBox("P6")),
+                new ListItem((byte) 200, "Program 7", getTextBox("P7")),
+                new ListItem((byte) 250, "Sound", getImageBox("/icon/sound-waves.png", Color.WHITE))
         );
         return new ListController(controller, clients, "Program", items);
+    }
+
+    private Pane getTextBox(String text) {
+        var stackPane = new StackPane();
+        stackPane.setPrefSize(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+        stackPane.setMinSize(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+        stackPane.setMaxSize(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+
+        var background = new Rectangle(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+        background.setFill(Color.LIGHTGRAY);
+        background.setStroke(Color.DARKGRAY);
+        background.setStrokeWidth(1);
+
+        var textNode = new javafx.scene.text.Text(text);
+        textNode.setFill(Color.BLACK);
+        textNode.setStyle("-fx-font-weight: bold; -fx-font-size: 10px;");
+
+        stackPane.getChildren().addAll(background, textNode);
+        return stackPane;
+    }
+
+
+    private Pane getImageBox(String img, Color backgroundColor) {
+        var stackPane = new StackPane();
+        stackPane.setPrefSize(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+        stackPane.setMinSize(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+        stackPane.setMaxSize(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+
+        var background = new Rectangle(LIST_ITEM_HEIGHT, LIST_ITEM_HEIGHT);
+        background.setFill(backgroundColor);
+
+        stackPane.getChildren().addAll(background, ImageHelper.getImageView(img, LIST_ITEM_HEIGHT));
+        return stackPane;
     }
 
     private Pane getColorBox(Color color) {

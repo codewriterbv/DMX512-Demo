@@ -17,6 +17,7 @@ import javafx.scene.text.Text;
 import java.util.List;
 
 public class ListController extends ListView<ListItem> {
+    public static final int LIST_ITEM_HEIGHT = 25;
     private final DMXController controller;
     private final List<DMXClient> clients;
     private final ObservableList<ListItem> observableItems;
@@ -28,15 +29,12 @@ public class ListController extends ListView<ListItem> {
         setItems(observableItems);
 
         // Set the preferred height based on items
-        setPrefHeight(USE_COMPUTED_SIZE);
-
-        // Calculate and set the max height based on number of items
-        // Assuming each cell is 20px high (based on your hbox.setPrefHeight(20))
-        // Plus 2 pixels for cell borders/padding if any
-        setMaxHeight((items.size() * 22) + 10);
+        var neededHeight = (items.size() * LIST_ITEM_HEIGHT) + 5;
+        setPrefHeight(neededHeight);
+        setMaxHeight(neededHeight);
 
         // Disable scrollbars since we're showing all items
-        setFixedCellSize(22);
+        setFixedCellSize(LIST_ITEM_HEIGHT);
 
         setCellFactory(_ -> new ColorItemCell());
 
@@ -72,7 +70,7 @@ public class ListController extends ListView<ListItem> {
             setStyle("-fx-padding: 0; -fx-background-insets: 0; -fx-border-width: 0;");
 
             hbox = new HBox(10); // 10 is the spacing
-            hbox.setPrefHeight(20);
+            hbox.setPrefHeight(LIST_ITEM_HEIGHT);
             hbox.setAlignment(Pos.CENTER_LEFT);
             hbox.setPadding(new Insets(0));
 
