@@ -11,7 +11,13 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 
 public class SingleSliderController extends VBox {
+    private final DMXController controller;
+    private final List<DMXClient> clients;
+
     public SingleSliderController(DMXController controller, List<DMXClient> clients, String key, int defaultValue) {
+        this.controller = controller;
+        this.clients = clients;
+
         setAlignment(Pos.TOP_CENTER);
         setSpacing(10);
 
@@ -28,13 +34,19 @@ public class SingleSliderController extends VBox {
             double sliderPercentage = slider.getValue() / slider.getMax();
 
             // Update the client values
-            clients.stream()
-                    .filter(c -> c.hasChannel(key))
-                    .forEach(c -> c.setValue(key, (byte) (255.0 * sliderPercentage)));
-
-            controller.render(clients);
+            updateClients(key, (byte) (255.0 * sliderPercentage));
         });
 
+        updateClients(key, (byte) (255.0 * (slider.getValue() / slider.getMax())));
+
         getChildren().addAll(title, slider);
+    }
+
+    private void updateClients(String key, byte value) {
+        clients.stream()
+                .filter(c -> c.hasChannel(key))
+                .forEach(c -> c.setValue(key, value));
+
+        controller.render(clients);
     }
 }

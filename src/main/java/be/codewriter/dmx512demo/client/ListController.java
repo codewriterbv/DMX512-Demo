@@ -4,7 +4,6 @@ import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512demo.client.data.ListItem;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,9 +17,13 @@ import javafx.scene.text.Text;
 import java.util.List;
 
 public class ListController extends ListView<ListItem> {
+    private final DMXController controller;
+    private final List<DMXClient> clients;
     private final ObservableList<ListItem> observableItems;
 
     public ListController(DMXController controller, List<DMXClient> clients, String key, List<ListItem> items) {
+        this.controller = controller;
+        this.clients = clients;
         observableItems = FXCollections.observableArrayList(items);
         setItems(observableItems);
 
@@ -35,20 +38,27 @@ public class ListController extends ListView<ListItem> {
         // Disable scrollbars since we're showing all items
         setFixedCellSize(22);
 
-        // Probably not needed, as number of items will not change in the list
-        observableItems.addListener((ListChangeListener<ListItem>) c -> setMaxHeight(observableItems.size() * 22));
-
         setCellFactory(_ -> new ColorItemCell());
 
         setOnMouseClicked(event -> {
             ListItem selectedItem = getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
-                clients.stream()
-                        .filter(c -> c.hasChannel(key))
-                        .forEach(c -> c.setValue(key, selectedItem.value()));
+                updateClients(key, selectedItem.value());
             }
-            controller.render(clients);
         });
+
+        // Select first item and update clients
+        if (!items.isEmpty()) {
+            getSelectionModel().select(0);
+            updateClients(key, items.getFirst().value());
+        }
+    }
+
+    private void updateClients(String key, byte value) {
+        clients.stream()
+                .filter(c -> c.hasChannel(key))
+                .forEach(c -> c.setValue(key, value));
+        controller.render(clients);
     }
 
     static class ColorItemCell extends ListCell<ListItem> {

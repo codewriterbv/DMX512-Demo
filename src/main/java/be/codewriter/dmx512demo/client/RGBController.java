@@ -17,11 +17,16 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 public class RGBController extends VBox {
+    private final DMXController controller;
+    private final List<DMXClient> clients;
+
     public RGBController(DMXController controller, List<DMXClient> clients) {
+        this.controller = controller;
+        this.clients = clients;
         var rgbColorBox = new RGBColorBox(255, 255, 255);
-        var red = getSlider(controller, clients, rgbColorBox::setRed, "Red", Color.RED);
-        var green = getSlider(controller, clients, rgbColorBox::setGreen, "Green", Color.GREEN);
-        var blue = getSlider(controller, clients, rgbColorBox::setBlue, "Blue", Color.BLUE);
+        var red = getSlider(rgbColorBox::setRed, "Red", Color.RED);
+        var green = getSlider(rgbColorBox::setGreen, "Green", Color.GREEN);
+        var blue = getSlider(rgbColorBox::setBlue, "Blue", Color.BLUE);
         var sliders = new HBox(red, green, blue);
         sliders.setAlignment(Pos.CENTER);
         getChildren().addAll(rgbColorBox, sliders);
@@ -33,7 +38,7 @@ public class RGBController extends VBox {
                 + "-fx-border-width: 2px;";
     }
 
-    private VBox getSlider(DMXController controller, List<DMXClient> clients, IntConsumer colorSetter, String key, Color color) {
+    private VBox getSlider(IntConsumer colorSetter, String key, Color color) {
         var holder = new VBox();
         holder.setPrefWidth(50);
         holder.setSpacing(10);
@@ -72,14 +77,19 @@ public class RGBController extends VBox {
             colorSetter.accept((int) (255.0 * sliderPercentage));
 
             // Update the client values
-            clients.stream()
-                    .filter(c -> c.hasChannel(key))
-                    .forEach(c -> c.setValue(key, (byte) (255.0 * sliderPercentage)));
-
-            controller.render(clients);
+            updateClients(key, (byte) (255.0 * sliderPercentage));
         });
 
+        updateClients(key, (byte) (255.0 * (slider.getValue() / slider.getMax())));
+
         return holder;
+    }
+
+    private void updateClients(String key, byte value) {
+        clients.stream()
+                .filter(c -> c.hasChannel(key))
+                .forEach(c -> c.setValue(key, value));
+        controller.render(clients);
     }
 
     private static class RGBColorBox extends StackPane {

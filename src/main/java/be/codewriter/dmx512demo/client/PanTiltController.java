@@ -20,6 +20,8 @@ public class PanTiltController extends VBox {
     private static final Logger LOGGER = LogManager.getLogger(PanTiltController.class.getName());
     private static final double AREA_SIZE = 200;
     private static final double KNOB_RADIUS = 15;
+    private final DMXController controller;
+    private final List<DMXClient> clients;
     private final DoubleProperty panValue = new SimpleDoubleProperty(127);
     private final DoubleProperty tiltValue = new SimpleDoubleProperty(127);
     private final DoubleProperty speedValue = new SimpleDoubleProperty(127);
@@ -29,6 +31,9 @@ public class PanTiltController extends VBox {
     private boolean isDragging = false;
 
     public PanTiltController(DMXController controller, List<DMXClient> clients) {
+        this.controller = controller;
+        this.clients = clients;
+
         setSpacing(10);
         setAlignment(Pos.CENTER);
         setPadding(new Insets(10));
@@ -77,15 +82,15 @@ public class PanTiltController extends VBox {
         }
 
         // Send value changes to devices
-        panValue.addListener((_, _, _) -> updateClients(controller, clients));
-        tiltValue.addListener((_, _, _) -> updateClients(controller, clients));
-        speedSlider.valueProperty().addListener((_, _, _) -> updateClients(controller, clients));
+        panValue.addListener((_, _, _) -> updateClients());
+        tiltValue.addListener((_, _, _) -> updateClients());
+        speedSlider.valueProperty().addListener((_, _, _) -> updateClients());
 
         // Send initial values
-        updateClients(controller, clients);
+        updateClients();
     }
 
-    private void updateClients(DMXController controller, List<DMXClient> clients) {
+    private void updateClients() {
         var currentPanValue = panValue.getValue().intValue();
         int panCoarse = currentPanValue / 256;
         int panFine = currentPanValue % 256;
