@@ -41,11 +41,11 @@ public class FixturesView extends Accordion {
 
         if (fixture.name().equalsIgnoreCase("LED PARty TCL Spot")) {
             var controllers = getLedPartyTCLControllers(controller, clients);
-            HBox.setHgrow(controllers, Priority.ALWAYS); // Allow it to grow
+            HBox.setHgrow(controllers, Priority.ALWAYS);
             holder.getChildren().add(controllers);
         } else if (fixture.name().equalsIgnoreCase("PicoSpot 20 LED")) {
             var controllers = new PicoSpotView(controller, clients);
-            HBox.setHgrow(controllers, Priority.ALWAYS); // Allow it to grow
+            HBox.setHgrow(controllers, Priority.ALWAYS);
             holder.getChildren().add(controllers);
         }
 
@@ -55,9 +55,9 @@ public class FixturesView extends Accordion {
     private FlowPane getLedPartyTCLControllers(DMXController controller, List<DMXClient> clients) {
         var holder = new FlowPane();
         holder.setRowValignment(VPos.TOP);
-        holder.setHgap(10); // horizontal gap between elements
-        holder.setVgap(10); // vertical gap between rows
-
+        holder.setHgap(10);
+        holder.setVgap(10);
+        
         holder.getChildren().add(new RGBController(controller, clients));
         holder.getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255, Orientation.VERTICAL));
 

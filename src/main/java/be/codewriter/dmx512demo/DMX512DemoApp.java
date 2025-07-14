@@ -2,23 +2,29 @@ package be.codewriter.dmx512demo;
 
 import be.codewriter.dmx512.Main;
 import be.codewriter.dmx512.client.DMXClient;
-import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512.controller.ip.DMXIPController;
-import be.codewriter.dmx512.controller.serial.DMXSerialController;
 import be.codewriter.dmx512.ofl.OpenFormatLibraryParser;
 import be.codewriter.dmx512.ofl.model.Fixture;
-import be.codewriter.dmx512demo.connection.ConnectionsView;
+import be.codewriter.dmx512demo.connection.ConnectionMonitor;
 import be.codewriter.dmx512demo.fixture.FixturesView;
+import be.codewriter.dmx512demo.window.AboutWindow;
+import be.codewriter.dmx512demo.window.IPDiscoveryWindow;
+import be.codewriter.dmx512demo.window.SerialDiscoveryWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 public class DMX512DemoApp extends Application {
@@ -41,16 +47,27 @@ public class DMX512DemoApp extends Application {
     }
 
     @Override
-    public void start(Stage stage) {
-        var dmxSerialController = new DMXSerialController();
-        var dmxIpController = new DMXIPController();
-        dmxIpController.setUniverse(1);
-
+    public void start(Stage stage) throws UnknownHostException {
         holder = new BorderPane();
         holder.setPadding(new Insets(10));
+        holder.setTop(getMenuBar(stage));
 
-        // Connections
-        holder.setLeft(new ConnectionsView(this, dmxSerialController, dmxIpController));
+        var controller = new DMXIPController(InetAddress.getByName("172.16.1.144"));
+        holder.setBottom(new ConnectionMonitor(controller));
+
+        var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
+        var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
+
+        if (ledPartyTclSpot != null && picoSpot20Led != null) {
+            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 1);
+            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 12);
+            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 23);
+            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 28);
+
+            var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
+
+            holder.setCenter(new FixturesView(controller, List.of(ledPartyTclSpot, picoSpot20Led), clients));
+        }
 
         var scene = new Scene(holder, 1400, 850);
         stage.setScene(scene);
@@ -66,26 +83,47 @@ public class DMX512DemoApp extends Application {
         });
     }
 
-    public void createFixturesView(DMXController controller) {
-        if (holder == null) {
-            LOGGER.warn("View holder not created yet");
-            return;
-        }
+    private MenuBar getMenuBar(Stage stage) {
+        var menuBar = new MenuBar();
 
-        // Fixtures
-        var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
-        var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
+        // Create Detect Serial menu item
+        MenuItem detectSerialItem = new MenuItem("Detect Serial");
+        detectSerialItem.setOnAction(e -> showSerialDiscoveryWindow(stage));
 
-        if (ledPartyTclSpot != null && picoSpot20Led != null) {
-            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 1);
-            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 12);
-            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 23);
-            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 28);
+        // Create Detect IP menu item
+        MenuItem detectIPItem = new MenuItem("Detect IP");
+        detectIPItem.setOnAction(e -> showIPDiscoveryWindow(stage));
 
-            var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
+        // Create Devices menu
+        Menu devicesMenu = new Menu("Devices");
+        devicesMenu.getItems().addAll(detectSerialItem, detectIPItem);
 
-            holder.setCenter(new FixturesView(controller, List.of(ledPartyTclSpot, picoSpot20Led), clients));
-        }
+        // Create About menu item
+        MenuItem aboutItem = new MenuItem("About...");
+        aboutItem.setOnAction(e -> showAbout(stage));
+
+        // Create Help menu
+        Menu helpMenu = new Menu("Help");
+        helpMenu.getItems().add(aboutItem);
+
+        menuBar.getMenus().addAll(devicesMenu, helpMenu);
+
+        return menuBar;
+    }
+
+    private void showSerialDiscoveryWindow(Stage stage) {
+        var window = new SerialDiscoveryWindow(stage);
+        window.show();
+    }
+
+    private void showIPDiscoveryWindow(Stage stage) {
+        var window = new IPDiscoveryWindow(stage);
+        window.show();
+    }
+
+    private void showAbout(Stage stage) {
+        var window = new AboutWindow(stage);
+        window.show();
     }
 
     private enum FixtureFile {

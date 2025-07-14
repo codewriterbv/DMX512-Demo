@@ -1,8 +1,8 @@
 package be.codewriter.dmx512demo.connection;
 
-import be.codewriter.dmx512.controller.DMXChangeListener;
-import be.codewriter.dmx512.controller.DMXChangeMessage;
-import be.codewriter.dmx512.controller.DMXChangeNotifier;
+import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512.controller.change.DMXChangeListener;
+import be.codewriter.dmx512.controller.change.DMXChangeMessage;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -19,7 +19,7 @@ public class OnOffIndicator extends HBox implements DMXChangeListener {
     private static final Logger LOGGER = LogManager.getLogger(OnOffIndicator.class.getName());
     public BooleanProperty isOn = new SimpleBooleanProperty(false);
 
-    public OnOffIndicator(String label, DMXChangeNotifier controller) {
+    public OnOffIndicator(String label, DMXController controller) {
         setSpacing(10);
         setAlignment(Pos.CENTER_LEFT);
 
@@ -42,6 +42,8 @@ public class OnOffIndicator extends HBox implements DMXChangeListener {
         connectionIndicator.fillProperty().bind(
                 Bindings.when(isOn).then(Color.GREEN).otherwise(Color.RED)
         );
+
+        isOn.set(controller.isConnected());
     }
 
     @Override
