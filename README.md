@@ -2,7 +2,7 @@
 
 Demo JavaFX application using the [DMX512 Java library](https://github.com/codewriterbv/DMX512).
 
-THIS PROJECT IS ON AN EARLY STAGE! BREAKING CHANGES ARE EXPECTED...
+**THIS PROJECT IS IN AN EARLY STAGE! BREAKING CHANGES ARE EXPECTED...**
 
 ![Screenshot of the application](screenshot/demo-app-picospot-channels.png)
 
