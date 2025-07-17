@@ -26,3 +26,4 @@ replay_pid*
 # varia
 /.idea/
 /target/
+/dependency-reduced-pom.xml

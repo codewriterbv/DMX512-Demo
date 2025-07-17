@@ -26,3 +26,11 @@ jobs:
       - name: Maven package
         run: |
           mvn package
+
+      # Upload the JAR artifact
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dmx512-demo-jar
+          path: target/dmx512-demo.jar
+          if-no-files-found: error
