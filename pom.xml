@@ -13,7 +13,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Dependencies -->
-        <dmx512.version>0.0.1-beta-SNAPSHOT</dmx512.version>
+        <dmx512.version>0.0.1</dmx512.version>
         <javafx.version>23.0.1</javafx.version>
         <log4j.version>2.20.0</log4j.version>
         <slf4j.version>2.0.9</slf4j.version>
@@ -40,7 +40,7 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-        
+
         <!-- JavaFX -->
         <dependency>
             <groupId>org.openjfx</groupId>

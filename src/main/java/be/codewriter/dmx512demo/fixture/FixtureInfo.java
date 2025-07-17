@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -103,10 +104,7 @@ public class FixtureInfo extends Accordion {
                         .map(c -> counter.getAndIncrement() + ". " + c)
                         .toList());
                 channelsList.setItems(channels);
-
-                // Set a reasonable size for the channels list
-                channelsList.setPrefHeight(Math.min(channels.size() * 24, 100));
-
+                VBox.setVgrow(channelsList, Priority.ALWAYS);
                 modeContent.getChildren().add(channelsList);
             }
 
