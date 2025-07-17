@@ -72,7 +72,7 @@ public class FixtureInfo extends Accordion {
         content.setPadding(new Insets(5));
 
         clients.forEach(c -> {
-            content.getChildren().add(getLabel("Channel: " + c.getAddress(), TITLE_FONT_SIZE, true));
+            content.getChildren().add(getLabel("Address: " + c.getAddress(), TITLE_FONT_SIZE, true));
             content.getChildren().add(getLabel("Mode: " + c.getSelectedMode().name()));
         });
 
