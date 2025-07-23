@@ -1,9 +1,10 @@
 package be.codewriter.dmx512demo;
 
 import be.codewriter.dmx512.Main;
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.ip.DMXIPController;
-import be.codewriter.dmx512.ofl.OpenFormatLibraryParser;
+import be.codewriter.dmx512.model.DMXClient;
+import be.codewriter.dmx512.model.DMXUniverse;
+import be.codewriter.dmx512.ofl.OFLParser;
 import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512demo.connection.ConnectionMonitor;
 import be.codewriter.dmx512demo.fixture.FixturesView;
@@ -33,7 +34,7 @@ public class DMX512DemoApp extends Application {
 
     private static Fixture getFixture(FixtureFile fixtureFile) {
         try (InputStream is = Main.class.getClassLoader().getResourceAsStream(fixtureFile.getFileName())) {
-            return OpenFormatLibraryParser.parseFixture(is);
+            return OFLParser.parse(is);
         } catch (Exception ex) {
             LOGGER.error("Error parsing fixture: {}", ex.getMessage());
         }
@@ -59,14 +60,16 @@ public class DMX512DemoApp extends Application {
         var picoSpot20Led = getFixture(FixtureFile.PICOSPOT_20_LED);
 
         if (ledPartyTclSpot != null && picoSpot20Led != null) {
-            var picoSpot1 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 1);
-            var picoSpot2 = new DMXClient(picoSpot20Led, picoSpot20Led.getModeByName("11-channel"), 12);
-            var ledPartyTclSpot1 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 23);
-            var ledPartyTclSpot2 = new DMXClient(ledPartyTclSpot, ledPartyTclSpot.getModeByName("5-Channel"), 28);
+            // This fixture has three modes, so we need to specify which one we want to use
+            var picoSpot1 = new DMXClient(1, picoSpot20Led, picoSpot20Led.getModeByName("11-channel"));
+            var picoSpot2 = new DMXClient(12, picoSpot20Led, picoSpot20Led.getModeByName("11-channel"));
+            // This fixture only has one mode, so we don't need to provide it
+            var ledPartyTclSpot1 = new DMXClient(23, ledPartyTclSpot);
+            var ledPartyTclSpot2 = new DMXClient(28, ledPartyTclSpot);
 
-            var clients = List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2);
+            var universe = new DMXUniverse(1, List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2));
 
-            holder.setCenter(new FixturesView(controller, List.of(ledPartyTclSpot, picoSpot20Led), clients));
+            holder.setCenter(new FixturesView(controller, List.of(ledPartyTclSpot, picoSpot20Led), universe));
         }
 
         var scene = new Scene(holder, 1400, 850);

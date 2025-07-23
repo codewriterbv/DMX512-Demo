@@ -8,7 +8,9 @@ import javafx.scene.layout.HBox;
 
 public class ConnectionMonitor extends HBox {
     public ConnectionMonitor(DMXController controller) {
-        this.getChildren().addAll(new Label(controller.getType() + " connection " + controller.getAddress()),
+        this.getChildren().addAll(new Label(controller.getType()
+                        + " connection " + controller.getAddress()
+                        + " " + controller.getProtocolName()),
                 new OnOffIndicator("Is connected", controller));
         this.setPrefWidth(250);
         this.setPadding(new Insets(10));

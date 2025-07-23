@@ -1,7 +1,8 @@
 package be.codewriter.dmx512demo.fixture;
 
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512.model.DMXUniverse;
+import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512demo.client.ListController;
 import be.codewriter.dmx512demo.client.PanTiltController;
 import be.codewriter.dmx512demo.client.SingleSliderController;
@@ -21,14 +22,22 @@ import java.util.List;
 import static be.codewriter.dmx512demo.client.ListController.LIST_ITEM_HEIGHT;
 
 public class PicoSpotView extends FlowPane {
-    public PicoSpotView(DMXController controller, List<DMXClient> clients) {
+    private final DMXController controller;
+    private final DMXUniverse universe;
+    private final Fixture fixture;
+
+    public PicoSpotView(DMXController controller, DMXUniverse universe, Fixture fixture) {
+        this.controller = controller;
+        this.universe = universe;
+        this.fixture = fixture;
+
         setRowValignment(VPos.TOP);
         setHgap(10); // horizontal gap between elements
         setVgap(10); // vertical gap between rows
 
-        var programList = getPicoSpotProgram(controller, clients);
-        var colorList = getColorWheel(controller, clients);
-        var goboList = getGoboWheel(controller, clients);
+        var programList = getPicoSpotProgram();
+        var colorList = getColorWheel();
+        var goboList = getGoboWheel();
 
         // Add listener to program list to enable/disable color and gobo lists
         programList.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
@@ -42,19 +51,19 @@ public class PicoSpotView extends FlowPane {
         colorList.setDisable(!isFirstItemSelected);
         goboList.setDisable(!isFirstItemSelected);
 
-        getChildren().add(getProgramView(controller, clients, programList));
+        getChildren().add(getProgramView(programList));
         getChildren().add(colorList);
         getChildren().add(goboList);
-        getChildren().add(new PanTiltController(controller, clients));
-        getChildren().add(new SingleSliderController(controller, clients, "Dimmer", 255, Orientation.VERTICAL));
-        getChildren().add(new SingleSliderController(controller, clients, "Shutter / Strobe", 0, Orientation.VERTICAL));
+        getChildren().add(new PanTiltController(controller, universe, fixture));
+        getChildren().add(new SingleSliderController(controller, universe, fixture, "Dimmer", 255, Orientation.VERTICAL));
+        getChildren().add(new SingleSliderController(controller, universe, fixture, "Shutter / Strobe", 0, Orientation.VERTICAL));
     }
 
-    private VBox getProgramView(DMXController controller, List<DMXClient> clients, ListController programList) {
+    private VBox getProgramView(ListController programList) {
         var holder = new VBox();
         holder.setSpacing(10);
         holder.getChildren().addAll(programList,
-                new SingleSliderController(controller, clients, "Program Speed", 127, Orientation.HORIZONTAL));
+                new SingleSliderController(controller, universe, fixture, "Program Speed", 127, Orientation.HORIZONTAL));
         return holder;
     }
 
@@ -77,7 +86,7 @@ public class PicoSpotView extends FlowPane {
      * 165 	…	175: Purple … White
      * 176 	…	255: Color Wheel rotation CW slow…
      */
-    private ListController getColorWheel(DMXController controller, List<DMXClient> clients) {
+    private ListController getColorWheel() {
         var items = List.of(
                 new ListItem((byte) 0, "White", getColorBox(Color.WHITE)),
                 new ListItem((byte) 11, "Red", getColorBox(Color.RED)),
@@ -97,7 +106,7 @@ public class PicoSpotView extends FlowPane {
                 new ListItem((byte) 165, "Purple-White", getColorBox(Color.PURPLE, Color.WHITE))
 
         );
-        return new ListController(controller, clients, "Color Wheel", items);
+        return new ListController(controller, universe, fixture, "Color Wheel", items);
     }
 
     /**
@@ -118,7 +127,7 @@ public class PicoSpotView extends FlowPane {
      * 219 	…	249: Gobo 7 shake slow…fast
      * 250 	…	255: Gobo Wheel rotation CW slow…fast
      */
-    private ListController getGoboWheel(DMXController controller, List<DMXClient> clients) {
+    private ListController getGoboWheel() {
         var items = List.of(
                 new ListItem((byte) 0, "Open", getImageBox("/gobo/open.jpg", Color.BLACK)),
                 new ListItem((byte) 16, "Gobo 1", getImageBox("/gobo/gobo-1.jpg", Color.BLACK)),
@@ -130,7 +139,7 @@ public class PicoSpotView extends FlowPane {
                 new ListItem((byte) 110, "Gobo 7", getImageBox("/gobo/gobo-7.jpg", Color.BLACK))
 
         );
-        return new ListController(controller, clients, "Gobo Wheel", items);
+        return new ListController(controller, universe, fixture, "Gobo Wheel", items);
     }
 
     /**
@@ -157,7 +166,7 @@ public class PicoSpotView extends FlowPane {
      * 240, 249: NoFunction - Empty
      * 250, 255: Effect - Sound-controlled operation
      */
-    private ListController getPicoSpotProgram(DMXController controller, List<DMXClient> clients) {
+    private ListController getPicoSpotProgram() {
         var items = List.of(
                 new ListItem((byte) 0, "None", getImageBox("/icon/none.png", Color.WHITE)),
                 new ListItem((byte) 50, "White", getColorBox(Color.WHITE)),
@@ -170,7 +179,7 @@ public class PicoSpotView extends FlowPane {
                 new ListItem((byte) 200, "Program 7", getTextBox("P7")),
                 new ListItem((byte) 250, "Sound", getImageBox("/icon/sound-waves.png", Color.WHITE))
         );
-        return new ListController(controller, clients, "Program", items);
+        return new ListController(controller, universe, fixture, "Program", items);
     }
 
     private Pane getTextBox(String text) {

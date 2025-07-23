@@ -1,22 +1,23 @@
 package be.codewriter.dmx512demo.client;
 
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512.model.DMXUniverse;
+import be.codewriter.dmx512.ofl.model.Fixture;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
 
-import java.util.List;
-
 public class SingleSliderController extends VBox {
     private final DMXController controller;
-    private final List<DMXClient> clients;
+    private final DMXUniverse universe;
+    private final Fixture fixture;
 
-    public SingleSliderController(DMXController controller, List<DMXClient> clients, String key, int defaultValue, Orientation orientation) {
+    public SingleSliderController(DMXController controller, DMXUniverse universe, Fixture fixture, String key, int defaultValue, Orientation orientation) {
         this.controller = controller;
-        this.clients = clients;
+        this.universe = universe;
+        this.fixture = fixture;
 
         setAlignment(Pos.TOP_CENTER);
         setSpacing(10);
@@ -44,10 +45,7 @@ public class SingleSliderController extends VBox {
     }
 
     private void updateClients(String key, byte value) {
-        clients.stream()
-                .filter(c -> c.hasChannel(key))
-                .forEach(c -> c.setValue(key, value));
-
-        controller.render(clients);
+        universe.updateFixtures(fixture, key, value);
+        controller.render(universe);
     }
 }

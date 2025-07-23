@@ -1,7 +1,8 @@
 package be.codewriter.dmx512demo.client;
 
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512.model.DMXUniverse;
+import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512demo.client.data.ListItem;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,12 +20,15 @@ import java.util.List;
 public class ListController extends ListView<ListItem> {
     public static final int LIST_ITEM_HEIGHT = 25;
     private final DMXController controller;
-    private final List<DMXClient> clients;
+    private final DMXUniverse universe;
+    private final Fixture fixture;
     private final ObservableList<ListItem> observableItems;
 
-    public ListController(DMXController controller, List<DMXClient> clients, String key, List<ListItem> items) {
+    public ListController(DMXController controller, DMXUniverse universe, Fixture fixture, String key, List<ListItem> items) {
         this.controller = controller;
-        this.clients = clients;
+        this.universe = universe;
+        this.fixture = fixture;
+
         observableItems = FXCollections.observableArrayList(items);
         setItems(observableItems);
 
@@ -53,10 +57,8 @@ public class ListController extends ListView<ListItem> {
     }
 
     private void updateClients(String key, byte value) {
-        clients.stream()
-                .filter(c -> c.hasChannel(key))
-                .forEach(c -> c.setValue(key, value));
-        controller.render(clients);
+        universe.updateFixtures(fixture, key, value);
+        controller.render(universe);
     }
 
     static class ColorItemCell extends ListCell<ListItem> {

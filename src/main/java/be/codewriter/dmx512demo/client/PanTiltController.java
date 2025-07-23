@@ -1,7 +1,8 @@
 package be.codewriter.dmx512demo.client;
 
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512.model.DMXUniverse;
+import be.codewriter.dmx512.ofl.model.Fixture;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -22,7 +23,6 @@ import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
 import java.util.Random;
 
 public class PanTiltController extends VBox {
@@ -32,7 +32,8 @@ public class PanTiltController extends VBox {
     private static final double MIN_ANIMATION_AREA_SIZE = 20;
 
     private final DMXController controller;
-    private final List<DMXClient> clients;
+    private final DMXUniverse universe;
+    private final Fixture fixture;
     private final DoubleProperty panValue = new SimpleDoubleProperty(127);
     private final DoubleProperty tiltValue = new SimpleDoubleProperty(127);
     private final DoubleProperty animationSpeedValue = new SimpleDoubleProperty(50);
@@ -53,9 +54,10 @@ public class PanTiltController extends VBox {
     private double targetX, targetY; // Target position for animation
     private double currentX, currentY; // Current position during animation
 
-    public PanTiltController(DMXController controller, List<DMXClient> clients) {
+    public PanTiltController(DMXController controller, DMXUniverse universe, Fixture fixture) {
         this.controller = controller;
-        this.clients = clients;
+        this.universe = universe;
+        this.fixture = fixture;
 
         setSpacing(10);
         setAlignment(Pos.CENTER);
@@ -428,22 +430,12 @@ public class PanTiltController extends VBox {
         valueLabel.setText(String.format("Pan: %.0f°, Tilt: %.0f°, Speed: %.0f",
                 panDegrees, tiltDegrees, speedSlider.getValue()));
 
-        clients.stream()
-                .filter(c -> c.hasChannel("pan"))
-                .forEach(c -> c.setValue("pan", (byte) panCoarse));
-        clients.stream()
-                .filter(c -> c.hasChannel("pan fine"))
-                .forEach(c -> c.setValue("pan fine", (byte) panFine));
-        clients.stream()
-                .filter(c -> c.hasChannel("tilt"))
-                .forEach(c -> c.setValue("tilt", (byte) tiltCoarse));
-        clients.stream()
-                .filter(c -> c.hasChannel("tilt fine"))
-                .forEach(c -> c.setValue("tilt fine", (byte) tiltFine));
-        clients.stream()
-                .filter(c -> c.hasChannel("Pan/Tilt Speed"))
-                .forEach(c -> c.setValue("Pan/Tilt Speed", (byte) speedSlider.getValue()));
+        universe.updateFixtures(fixture, "pan", (byte) panCoarse);
+        universe.updateFixtures(fixture, "pan fine", (byte) panFine);
+        universe.updateFixtures(fixture, "tilt", (byte) tiltCoarse);
+        universe.updateFixtures(fixture, "tilt fine", (byte) tiltFine);
+        universe.updateFixtures(fixture, "Pan/Tilt Speed", (byte) speedSlider.getValue());
 
-        controller.render(clients);
+        controller.render(universe);
     }
 }

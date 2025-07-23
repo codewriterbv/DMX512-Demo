@@ -2,7 +2,7 @@ package be.codewriter.dmx512demo.connection;
 
 import be.codewriter.dmx512.controller.DMXController;
 import be.codewriter.dmx512.controller.change.DMXChangeListener;
-import be.codewriter.dmx512.controller.change.DMXChangeMessage;
+import be.codewriter.dmx512.controller.change.DMXStatusChangeMessage;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -47,11 +47,11 @@ public class OnOffIndicator extends HBox implements DMXChangeListener {
     }
 
     @Override
-    public void notify(DMXChangeMessage dmxChangeMessage, String value) {
-        switch (dmxChangeMessage) {
+    public void notify(DMXStatusChangeMessage message, String value) {
+        switch (message) {
             case CONNECTED -> isOn.set(true);
             case DISCONNECTED -> isOn.set(false);
-            default -> LOGGER.debug("Received DMX change message is not handled: {}, {}", dmxChangeMessage, value);
+            default -> LOGGER.debug("Received DMX change message is not handled: {}, {}", message, value);
         }
     }
 }

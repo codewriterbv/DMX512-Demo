@@ -1,7 +1,8 @@
 package be.codewriter.dmx512demo.client;
 
-import be.codewriter.dmx512.client.DMXClient;
 import be.codewriter.dmx512.controller.DMXController;
+import be.codewriter.dmx512.model.DMXUniverse;
+import be.codewriter.dmx512.ofl.model.Fixture;
 import be.codewriter.dmx512demo.helper.ColorHelper;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -13,16 +14,18 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-import java.util.List;
 import java.util.function.IntConsumer;
 
 public class RGBController extends VBox {
     private final DMXController controller;
-    private final List<DMXClient> clients;
+    private final DMXUniverse universe;
+    private final Fixture fixture;
 
-    public RGBController(DMXController controller, List<DMXClient> clients) {
+    public RGBController(DMXController controller, DMXUniverse universe, Fixture fixture) {
         this.controller = controller;
-        this.clients = clients;
+        this.universe = universe;
+        this.fixture = fixture;
+
         var rgbColorBox = new RGBColorBox(255, 255, 255);
         var red = getSlider(rgbColorBox::setRed, "Red", Color.RED);
         var green = getSlider(rgbColorBox::setGreen, "Green", Color.GREEN);
@@ -86,10 +89,8 @@ public class RGBController extends VBox {
     }
 
     private void updateClients(String key, byte value) {
-        clients.stream()
-                .filter(c -> c.hasChannel(key))
-                .forEach(c -> c.setValue(key, value));
-        controller.render(clients);
+        universe.updateFixtures(fixture, key, value);
+        controller.render(universe);
     }
 
     private static class RGBColorBox extends StackPane {

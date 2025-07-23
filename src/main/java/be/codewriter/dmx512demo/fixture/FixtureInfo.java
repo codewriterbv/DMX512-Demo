@@ -1,6 +1,6 @@
 package be.codewriter.dmx512demo.fixture;
 
-import be.codewriter.dmx512.client.DMXClient;
+import be.codewriter.dmx512.model.DMXClient;
 import be.codewriter.dmx512.ofl.model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -357,8 +357,8 @@ public class FixtureInfo extends Accordion {
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
-        if (physical.DMXconnector() != null) {
-            Label lbl = getLabel("DMX connector: " + physical.DMXconnector());
+        if (physical.dmxConnector() != null) {
+            Label lbl = getLabel("DMX connector: " + physical.dmxConnector());
             lbl.setStyle("-fx-font-size: 11px;");
             content.getChildren().add(lbl);
         }
