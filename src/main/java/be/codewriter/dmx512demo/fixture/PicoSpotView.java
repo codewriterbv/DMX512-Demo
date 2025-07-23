@@ -96,15 +96,14 @@ public class PicoSpotView extends FlowPane {
                 new ListItem((byte) 55, "Blue", getColorBox(Color.BLUE)),
                 new ListItem((byte) 66, "Cyan", getColorBox(Color.CYAN)),
                 new ListItem((byte) 77, "Purple", getColorBox(Color.PURPLE)),
-                new ListItem((byte) 88, "White-Red", getColorBox(Color.WHITE, Color.RED)),
-                new ListItem((byte) 99, "Red-Orange", getColorBox(Color.RED, Color.ORANGE)),
-                new ListItem((byte) 110, "Orange-Yellow", getColorBox(Color.ORANGE, Color.YELLOW)),
-                new ListItem((byte) 121, "Yellow-Green", getColorBox(Color.YELLOW, Color.GREEN)),
-                new ListItem((byte) 132, "Green-Blue", getColorBox(Color.GREEN, Color.BLUE)),
-                new ListItem((byte) 143, "Blue-Cyan", getColorBox(Color.BLUE, Color.CYAN)),
-                new ListItem((byte) 154, "Cyan-Purple", getColorBox(Color.CYAN, Color.PURPLE)),
-                new ListItem((byte) 165, "Purple-White", getColorBox(Color.PURPLE, Color.WHITE))
-
+                new ListItem((byte) 94, "Cyan-Purple", getColorBox(Color.CYAN, Color.PURPLE)),
+                new ListItem((byte) 106, "Blue-Cyan", getColorBox(Color.BLUE, Color.CYAN)),
+                new ListItem((byte) 119, "Green-Blue", getColorBox(Color.GREEN, Color.BLUE)),
+                new ListItem((byte) 131, "Yellow-Green", getColorBox(Color.YELLOW, Color.GREEN)),
+                new ListItem((byte) 144, "Orange-Yellow", getColorBox(Color.ORANGE, Color.YELLOW)),
+                new ListItem((byte) 156, "Red-Orange", getColorBox(Color.RED, Color.ORANGE)),
+                new ListItem((byte) 169, "White-Red", getColorBox(Color.WHITE, Color.RED)),
+                new ListItem((byte) 200, "All colors", getImageBox("/icon/rainbow.jpg", Color.WHITE))
         );
         return new ListController(controller, universe, fixture, "Color Wheel", items);
     }

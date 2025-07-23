@@ -103,7 +103,7 @@ public class PanTiltController extends VBox {
         setupMouseHandling();
 
         // Create speed slider
-        speedSlider = new Slider(0, 255, 127);
+        speedSlider = new Slider(0, 255, 255);
         speedSlider.setShowTickLabels(true);
         speedSlider.setShowTickMarks(true);
         speedSlider.setMajorTickUnit(25);
@@ -153,7 +153,7 @@ public class PanTiltController extends VBox {
             stopAutoAnimation();
         } else {
             startAutoAnimation();
-            speedSlider.setValue(0);
+            speedSlider.setValue(255);
         }
     }
 
@@ -434,7 +434,7 @@ public class PanTiltController extends VBox {
         universe.updateFixtures(fixture, "pan fine", (byte) panFine);
         universe.updateFixtures(fixture, "tilt", (byte) tiltCoarse);
         universe.updateFixtures(fixture, "tilt fine", (byte) tiltFine);
-        universe.updateFixtures(fixture, "Pan/Tilt Speed", (byte) speedSlider.getValue());
+        universe.updateFixtures(fixture, "Pan/Tilt Speed", (byte) (255 - speedSlider.getValue()));
 
         controller.render(universe);
     }

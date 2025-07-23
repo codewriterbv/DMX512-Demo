@@ -24,6 +24,8 @@ public class SingleSliderController extends VBox {
 
         var title = new Label(key);
 
+        var valueLabel = new Label(String.valueOf(defaultValue));
+        valueLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
 
         var slider = new Slider(0, 255, defaultValue);
         slider.setOrientation(orientation);
@@ -32,6 +34,9 @@ public class SingleSliderController extends VBox {
         slider.setMajorTickUnit(25);
 
         slider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            // Update the value label
+            valueLabel.setText(String.format("%.0f", newVal.doubleValue()));
+
             // Convert slider value (0-100) to opacity (0-1)
             double sliderPercentage = slider.getValue() / slider.getMax();
 
@@ -41,7 +46,7 @@ public class SingleSliderController extends VBox {
 
         updateClients(key, (byte) (255.0 * (slider.getValue() / slider.getMax())));
 
-        getChildren().addAll(title, slider);
+        getChildren().addAll(title, slider, valueLabel);
     }
 
     private void updateClients(String key, byte value) {
