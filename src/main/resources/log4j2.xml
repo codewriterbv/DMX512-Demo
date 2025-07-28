@@ -27,12 +27,12 @@
         </Root>
 
         <!-- Application Specific Logger -->
-        <Logger name="be.codewriter.dmx512" level="TRACE" additivity="false">
+        <Logger name="be.codewriter.dmx512" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
 
         <!-- Application Specific Logger -->
-        <Logger name="be.codewriter.dmx512demo" level="DEBUG" additivity="false">
+        <Logger name="be.codewriter.dmx512demo" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
     </Loggers>

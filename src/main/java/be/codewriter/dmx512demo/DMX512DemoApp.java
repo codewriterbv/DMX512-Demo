@@ -1,7 +1,8 @@
 package be.codewriter.dmx512demo;
 
 import be.codewriter.dmx512.Main;
-import be.codewriter.dmx512.controller.ip.DMXIPController;
+import be.codewriter.dmx512.controller.serial.DMXSerialController;
+import be.codewriter.dmx512.controller.serial.SerialProtocol;
 import be.codewriter.dmx512.model.DMXClient;
 import be.codewriter.dmx512.model.DMXUniverse;
 import be.codewriter.dmx512.ofl.OFLParser;
@@ -24,12 +25,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
 public class DMX512DemoApp extends Application {
     private static final Logger LOGGER = LogManager.getLogger(DMX512DemoApp.class.getName());
+    private static final int UNIVERSE_ID = 0;
     private BorderPane holder;
 
     private static Fixture getFixture(FixtureFile fixtureFile) {
@@ -53,7 +54,8 @@ public class DMX512DemoApp extends Application {
         holder.setPadding(new Insets(10));
         holder.setTop(getMenuBar(stage));
 
-        var controller = new DMXIPController(InetAddress.getByName("172.16.1.144"));
+        // var controller = new DMXIPController(InetAddress.getByName("172.16.1.144"));
+        var controller = new DMXSerialController("tty.usbserial-BG01OL60", SerialProtocol.OPEN_DMX_USB);
         holder.setBottom(new ConnectionMonitor(controller));
 
         var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);
@@ -67,7 +69,7 @@ public class DMX512DemoApp extends Application {
             var ledPartyTclSpot1 = new DMXClient(23, ledPartyTclSpot);
             var ledPartyTclSpot2 = new DMXClient(28, ledPartyTclSpot);
 
-            var universe = new DMXUniverse(1, List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2));
+            var universe = new DMXUniverse(UNIVERSE_ID, List.of(ledPartyTclSpot1, ledPartyTclSpot2, picoSpot1, picoSpot2));
 
             holder.setCenter(new FixturesView(controller, List.of(ledPartyTclSpot, picoSpot20Led), universe));
         }
