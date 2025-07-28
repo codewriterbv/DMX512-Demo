@@ -76,14 +76,7 @@ public class PicoSpotView extends FlowPane {
      * 55 	…	65: Blue
      * 66 	…	76: Cyan
      * 77 	…	87: Purple
-     * 88 	…	98: White … Red
-     * 99 	…	109: Red … Orange
-     * 110 	…	120: Orange … Yellow
-     * 121 	…	131: Yellow … Green
-     * 132 	…	142: Green … Blue
-     * 143 	…	153: Blue … Cyan
-     * 154 	…	164: Cyan … Purple
-     * 165 	…	175: Purple … White
+     * ...
      * 176 	…	255: Color Wheel rotation CW slow…
      */
     private ListController getColorWheel() {

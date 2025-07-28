@@ -153,11 +153,12 @@ public class PanTiltController extends VBox {
             stopAutoAnimation();
         } else {
             startAutoAnimation();
-            speedSlider.setValue(255);
         }
     }
 
     private void startAutoAnimation() {
+        speedSlider.setValue(255);
+        
         autoAnimationEnabled.set(true);
         autoAnimationButton.setText("Disable Auto-Animation");
 
