@@ -1,8 +1,7 @@
 package be.codewriter.dmx512demo;
 
 import be.codewriter.dmx512.Main;
-import be.codewriter.dmx512.controller.serial.DMXSerialController;
-import be.codewriter.dmx512.controller.serial.SerialProtocol;
+import be.codewriter.dmx512.controller.ip.DMXIPController;
 import be.codewriter.dmx512.model.DMXClient;
 import be.codewriter.dmx512.model.DMXUniverse;
 import be.codewriter.dmx512.ofl.OFLParser;
@@ -25,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
@@ -54,8 +54,8 @@ public class DMX512DemoApp extends Application {
         holder.setPadding(new Insets(10));
         holder.setTop(getMenuBar(stage));
 
-        // var controller = new DMXIPController(InetAddress.getByName("172.16.1.144"));
-        var controller = new DMXSerialController("tty.usbserial-BG01OL60", SerialProtocol.OPEN_DMX_USB);
+        var controller = new DMXIPController(InetAddress.getByName("172.16.1.144"));
+        //var controller = new DMXSerialController("tty.usbserial-BG01OL60", SerialProtocol.OPEN_DMX_USB);
         holder.setBottom(new ConnectionMonitor(controller));
 
         var ledPartyTclSpot = getFixture(FixtureFile.LED_PARTY_TCL_SPOT);

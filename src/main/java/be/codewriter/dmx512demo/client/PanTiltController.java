@@ -12,6 +12,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
@@ -38,6 +39,7 @@ public class PanTiltController extends VBox {
     private final DoubleProperty tiltValue = new SimpleDoubleProperty(127);
     private final DoubleProperty animationSpeedValue = new SimpleDoubleProperty(50);
     private final BooleanProperty autoAnimationEnabled = new SimpleBooleanProperty(false);
+    private final BooleanProperty mirrored = new SimpleBooleanProperty(false);
 
     private final Circle joystick;
     private final Pane joystickArea;
@@ -46,6 +48,7 @@ public class PanTiltController extends VBox {
     private final Button autoAnimationButton;
     private final Slider speedSlider;
     private final Slider animationSpeedSlider;
+    private final CheckBox mirroredCheckBox;
     private final Random random = new Random();
     private boolean isDragging = false;
     private boolean isResizingAnimationArea = false;
@@ -122,6 +125,12 @@ public class PanTiltController extends VBox {
         Label animationSpeedLabel = new Label("Animation Speed:");
         animationSpeedLabel.disableProperty().bind(autoAnimationEnabled.not());
 
+        // Create mirror checkboxes
+        mirroredCheckBox = new CheckBox("Mirrored");
+
+        // Bind checkbox states to properties
+        mirrored.bind(mirroredCheckBox.selectedProperty());
+
         // Add components to layout
         getChildren().addAll(
                 joystickArea,
@@ -129,6 +138,7 @@ public class PanTiltController extends VBox {
                 autoAnimationButton,
                 animationSpeedLabel,
                 animationSpeedSlider,
+                mirroredCheckBox,
                 valueLabel
         );
 
@@ -143,6 +153,7 @@ public class PanTiltController extends VBox {
         panValue.addListener((_, _, _) -> updateClients());
         tiltValue.addListener((_, _, _) -> updateClients());
         speedSlider.valueProperty().addListener((_, _, _) -> updateClients());
+        mirrored.addListener((_, _, _) -> updateClients());
 
         // Send initial values
         updateClients();
@@ -158,7 +169,7 @@ public class PanTiltController extends VBox {
 
     private void startAutoAnimation() {
         speedSlider.setValue(255);
-        
+
         autoAnimationEnabled.set(true);
         autoAnimationButton.setText("Disable Auto-Animation");
 
@@ -419,23 +430,48 @@ public class PanTiltController extends VBox {
 
     private void updateClients() {
         var currentPanValue = panValue.getValue().intValue();
-        int panCoarse = currentPanValue / 256;
-        int panFine = currentPanValue % 256;
-        double panDegrees = ((currentPanValue * 1.0) / 65535) * 360;
-
         var currentTiltValue = tiltValue.getValue().intValue();
-        int tiltCoarse = currentTiltValue / 256;
-        int tiltFine = currentTiltValue % 256;
+
+        // Get fixture clients to determine device count and identify even devices
+        var fixtureClients = universe.getFixtureClients(fixture);
+
+        for (int i = 0; i < fixtureClients.size(); i++) {
+            var client = fixtureClients.get(i);
+
+            // Determine if this is an even device (0-indexed, so even index = odd device number)
+            boolean isEvenDevice = (i + 1) % 2 == 0;
+
+            // Apply mirroring for even devices if enabled
+            int finalPanValue = currentPanValue;
+            int finalTiltValue = currentTiltValue;
+
+            if (isEvenDevice) {
+                if (mirrored.get()) {
+                    finalPanValue = 65535 - currentPanValue; // Mirror pan value
+                    finalTiltValue = 65535 - currentTiltValue; // Mirror tilt value
+                }
+            }
+
+            int panCoarse = finalPanValue / 256;
+            int panFine = finalPanValue % 256;
+            int tiltCoarse = finalTiltValue / 256;
+            int tiltFine = finalTiltValue % 256;
+
+            // Update the specific client
+            client.setValue("pan", (byte) panCoarse);
+            client.setValue("pan fine", (byte) panFine);
+            client.setValue("tilt", (byte) tiltCoarse);
+            client.setValue("tilt fine", (byte) tiltFine);
+            client.setValue("Pan/Tilt Speed", (byte) (255 - speedSlider.getValue()));
+        }
+
+        // Update display label with original values
+        double panDegrees = ((currentPanValue * 1.0) / 65535) * 360;
         double tiltDegrees = 180 - ((currentTiltValue * 1.0) / 65535) * 180;
 
-        valueLabel.setText(String.format("Pan: %.0f°, Tilt: %.0f°, Speed: %.0f",
-                panDegrees, tiltDegrees, speedSlider.getValue()));
-
-        universe.updateFixtures(fixture, "pan", (byte) panCoarse);
-        universe.updateFixtures(fixture, "pan fine", (byte) panFine);
-        universe.updateFixtures(fixture, "tilt", (byte) tiltCoarse);
-        universe.updateFixtures(fixture, "tilt fine", (byte) tiltFine);
-        universe.updateFixtures(fixture, "Pan/Tilt Speed", (byte) (255 - speedSlider.getValue()));
+        valueLabel.setText(String.format("Pan: %.0f°, Tilt: %.0f°, Speed: %.0f, %s",
+                panDegrees, tiltDegrees, speedSlider.getValue(),
+                mirrored.get() ? " Mirrored" : ""));
 
         controller.render(universe);
     }
