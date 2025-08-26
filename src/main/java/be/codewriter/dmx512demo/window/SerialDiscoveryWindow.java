@@ -1,7 +1,7 @@
 package be.codewriter.dmx512demo.window;
 
 import be.codewriter.dmx512.controller.serial.DMXSerialDiscoverTool;
-import be.codewriter.dmx512.serial.SerialConnection;
+import be.codewriter.dmx512.controller.serial.SerialConnection;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;

@@ -1,7 +1,7 @@
 package be.codewriter.dmx512demo.window;
 
+import be.codewriter.dmx512.controller.ip.DMXIPDevice;
 import be.codewriter.dmx512.controller.ip.DMXIPDiscoverTool;
-import be.codewriter.dmx512.network.DMXIPDevice;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;

@@ -54,4 +54,9 @@ public class OnOffIndicator extends HBox implements DMXChangeListener {
             default -> LOGGER.debug("Received DMX change message is not handled: {}, {}", message, value);
         }
     }
+
+    @Override
+    public void notify(DMXStatusChangeMessage message, byte[] bytes) {
+        notify(message, new String(bytes));
+    }
 }
